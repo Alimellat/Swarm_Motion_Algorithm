@@ -13,6 +13,7 @@ bool speed_flag=0;
 //QFile File("s.txt");
 bool frac_flag[300];
 
+// the comment for github
 
 
 int repeat_counter=0;
