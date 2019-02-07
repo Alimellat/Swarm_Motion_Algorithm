@@ -410,6 +410,8 @@ bool node::get_bordernode()
     return bordernode;
 }
 
+
+
 void node::heal_check()
 {
     if(neigh_N1 ||
@@ -593,6 +595,8 @@ void node::set_bordernode(bool a)
 {
     bordernode=a;
 }
+
+
 
 void node::init_neigh(int i, int j){
 
@@ -1169,12 +1173,6 @@ void adjust_border_node(int x,int y,int leader_num){//right, works for every ind
     ellipse[x][y]->setPos(disp_x,disp_y);
 }
 
-//double calc_po(double dt){
-
- //   return (alpha1);
-
-
-//}
 
 void adjust_border_type1(){//not compatible with the new changes
 
@@ -1668,56 +1666,19 @@ void node::keyPressEvent(QKeyEvent *event)
     //qDebug()<<ellipse[1][1]->get_disp_x(h)<<"    "<<ellipse[1][1]->get_disp_y(h)<<"\n";
 
 
-    if(event->key() == Qt::Key_Asterisk){
-        //ellipse[1][1]->neigh_E->setBrush(QBrush(Qt::green,Qt::SolidPattern));
-//        qDebug()<<ellipse[6][5]->neigh_SW<<"  "<<ellipse[5][5]->neigh_SW<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_SE<<"  "<<ellipse[5][5]->neigh_SE<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_NW<<"  "<<ellipse[5][5]->neigh_NW<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_NE<<"  "<<ellipse[5][5]->neigh_NE<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_S<<"  "<<ellipse[5][5]->neigh_S<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_W<<"  "<<ellipse[5][5]->neigh_W<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_N<<"  "<<ellipse[5][5]->neigh_N<<"\n";
-//        qDebug()<<ellipse[6][5]->neigh_E<<"  "<<ellipse[5][5]->neigh_E<<"\n";
-        for (int i=0;i<100;i++){
-            qDebug()<<frac_flag[i]<<"\n";
-        }
 
-    }
 
-    else if(event->key() == Qt::Key_F){
+     if(event->key() == Qt::Key_F){
         border_type=(!border_type);
 
     }
 
 
-    else if(event->key() == Qt::Key_L){
-        for(int hh=0;hh<vector_size;hh++){
-            for(int hhh=0;hhh<vector_size;hhh++) {
-
-                if(ellipse[hh][hhh]->get_leader()){
-                    ellipse[hh][hhh]->setBrush(QBrush(Qt::cyan,Qt::SolidPattern));
-                }
-
-            }
-        }
-
-    }
 
 
-    else if(event->key() == Qt::Key_M){
 
 
-        for(int j=1;j<vector_size-2;j++){
-
-            adjust_layer(j,curr_leader);
-        }
-
-        //adjust_all_total();
-        adjust_border_type2(curr_leader);
-
-    }
-
-    else if(event->key() == Qt::Key_P){
+    else if(event->key() == Qt::Key_P){// reset the swarm
 
         for(int j=0;j<vector_size;j++){
         for (int i=0;i<vector_size;i++){
@@ -1731,58 +1692,11 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
 
+//ARROW keys CAN BE USED TO SELECT LEADERS, ALTOUGH THIS HAS TO BE IMPLEMENTED TO WORK WITH THE NEW CODE
+     //THE PREVIOUS METHOD WOULD NOT WORK FOR THE NEW CODE AND FUNCTIONALITIES
 
 
 
-/*
-    else if(event->key() == Qt::Key_Left){
-        ellipse[leaderx][leadery]->set_leader(false);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::red,Qt::SolidPattern));//change the color
-        leader_vector_place=(leader_vector_place+1)%leader_size;
-        leaderx=leader_vector[leader_vector_place][0];
-        leadery=leader_vector[leader_vector_place][1];
-
-        ellipse[leaderx][leadery]->set_leader(true);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));//change the color
-    }
-
-
-    else if(event->key() == Qt::Key_Right){
-        ellipse[leaderx][leadery]->set_leader(false);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::red,Qt::SolidPattern));//change the color
-        leader_vector_place=(leader_vector_place-1);
-        if(leader_vector_place==-1)
-            leader_vector_place+=leader_size;
-        leaderx=leader_vector[leader_vector_place][0];
-        leadery=leader_vector[leader_vector_place][1];
-
-        ellipse[leaderx][leadery]->set_leader(true);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));//change the color
-    }
-
-
-
-
-/*
-
-    else if(event->key() == Qt::Key_Up){
-        ellipse[leaderx][leadery]->set_leader(false);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::red,Qt::SolidPattern));//change the color
-
-        if(leadery>1)
-            leadery--;
-        ellipse[leaderx][leadery]->set_leader(true);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));//change the color
-    }
-
-    else if(event->key() == Qt::Key_Down){
-        ellipse[leaderx][leadery]->set_leader(false);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::red,Qt::SolidPattern));//change the color
-        if(leadery<vector_size-2)
-            leadery++;
-        ellipse[leaderx][leadery]->set_leader(true);
-        ellipse[leaderx][leadery]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));//change the color
-    }*/
 
     else if(event->key() == Qt::Key_A){
 
@@ -1923,21 +1837,15 @@ void node::keyPressEvent(QKeyEvent *event)
             run_alg();
     }
 
-    else if(event->key() == Qt::Key_S){
-       /* ellipse[leader_vector[0][0]][leader_vector[0][1]]->setPos
-                (ellipse[leader_vector[0][0]][leader_vector[0][1]]->x()-
-                speed*step_size,ellipse[leader_vector[0][0]][leader_vector[0][1]]->y());
-
-        ellipse[leader_vector[0][0]][leader_vector[0][1]]->set_displacement(curr_leader,
-                                                                          ellipse[leader_vector[0][0]][leader_vector[0][1]]->x(),
-                ellipse[leader_vector[0][0]][leader_vector[0][1]]->y());
-*/
+    else if(event->key() == Qt::Key_S){//make time go by to make the swarm rest and go to its initial form
 
             run_alg();
 }
 
 
-    else if(event->key()== Qt::Key_Space){
+    else if(event->key()== Qt::Key_Space){// to rotate the leader for checking the effects of periodic motion
+
+
        // repeat_counter=0;
         //period_iteration=0;
 
@@ -1947,7 +1855,7 @@ void node::keyPressEvent(QKeyEvent *event)
             File.open(QIODevice::WriteOnly|QIODevice::Text);
 
            // QTextStream intofile(&File);
-           // in<<scor;
+            // in<<scor;
            // File.close();
             file_open=true;
             //in=intofile;
@@ -2050,96 +1958,22 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
     }
-    else if(event->key() == Qt::Key_Plus){
+    else if(event->key() == Qt::Key_Plus){// increase the speed of the leaders
         speed+=0.02;
         if(speed<0.0001 && speed>-0.0001)
             speed=0;
 
-    } else if(event->key() == Qt::Key_Minus){
+    } else if(event->key() == Qt::Key_Minus){//decrease the speed of the leaders
         speed-=0.02;
         if(speed<0.0001 && speed>-0.0001)
             speed=0;
 
     }
-    else if(event->key() == Qt::Key_Escape){
+    else if(event->key() == Qt::Key_Escape){// close the program
         if(file_open)
             File.close();
         exit(0);
-    }else if(event->key()==Qt::Key_I){
-            if(j<vector_size-1){
-             adjust_layer(j,curr_leader);
-             j++;
-}
-
-       else if((j== vector_size-1)&& (ii<vector_size-1)) {
-
-
-
-           switch (kk++){
-               case(0):{adjust_border_node(ii,0,curr_leader);
-               text->setPlainText( QString("speed: ") +QString::number(speed)+QString("\nstep size: ") +QString::number(step_size)+QString("\nleader: ") +QString::number(ellipse[leaderx][leadery]->x())+QString("  ")+QString::number(ellipse[leaderx][leadery]->y())
-                                   +QString("\n edgex: ")+QString::number(ellipse[ii][0]->x())
-                                   +QString("\n edgey: ")+QString::number(ellipse[ii][0]->y())
-                                   +QString("\n nearx: ")+QString::number(ellipse[x2][y2]->x())
-                                    +QString("\n neary: ")+QString::number(ellipse[x2][y2]->y())
-                                    +QString("\n x: ")+QString::number(x2)
-                                    +QString("\n y: ")+QString::number(y2)
-                       +QString("\n d: ")+QString::number(d)
-                       +QString("\n d: ")+QString::number(dX)
-                       +QString("\n d: ")+QString::number(dY));
-
-break;
-           }
-           case(1):{adjust_border_node(ii,vector_size-1,curr_leader);
-               text->setPlainText( QString("speed: ") +QString::number(speed)+QString("\nstep size: ") +QString::number(step_size)+QString("\nleader: ") +QString::number(ellipse[leaderx][leadery]->x())+QString("  ")+QString::number(ellipse[leaderx][leadery]->y())
-                                   +QString("\n edgex: ")+QString::number(ellipse[ii][vector_size-1]->x())
-                                   +QString("\n edgey: ")+QString::number(ellipse[ii][vector_size-1]->y())
-                                   +QString("\n nearx: ")+QString::number(ellipse[x2][y2]->x())
-                                    +QString("\n neary: ")+QString::number(ellipse[x2][y2]->y())
-                                    +QString("\n x: ")+QString::number(x2)
-                                    +QString("\n y: ")+QString::number(y2)
-                       +QString("\n d: ")+QString::number(d)
-                       +QString("\n d: ")+QString::number(dX)
-                       +QString("\n d: ")+QString::number(dY));}
-           case(2):{adjust_border_node(0,ii,curr_leader);
-               text->setPlainText( QString("speed: ") +QString::number(speed)+QString("\nstep size: ") +QString::number(step_size)+QString("\nleader: ") +QString::number(ellipse[leaderx][leadery]->x())+QString("  ")+QString::number(ellipse[leaderx][leadery]->y())
-                                   +QString("\n edgex: ")+QString::number(ellipse[0][ii]->x())
-                                   +QString("\n edgey: ")+QString::number(ellipse[0][ii]->y())
-                                   +QString("\n nearx: ")+QString::number(ellipse[x2][y2]->x())
-                                    +QString("\n neary: ")+QString::number(ellipse[x2][y2]->y())
-                                    +QString("\n x: ")+QString::number(x2)
-                                    +QString("\n y: ")+QString::number(y2)
-                       +QString("\n d: ")+QString::number(d)
-                       +QString("\n d: ")+QString::number(dX)
-                       +QString("\n d: ")+QString::number(dY));
-                                       break;}
-           case(3):{adjust_border_node(vector_size-1,ii,curr_leader);
-               text->setPlainText( QString("speed: ") +QString::number(speed)+QString("\nstep size: ") +QString::number(step_size)+QString("\nleader: ") +QString::number(ellipse[leaderx][leadery]->x())+QString("  ")+QString::number(ellipse[leaderx][leadery]->y())
-                                   +QString("\n edgex: ")+QString::number(ellipse[vector_size-1][ii]->x())
-                                   +QString("\n edgey: ")+QString::number(ellipse[vector_size-1][ii]->y())
-                                   +QString("\n nearx: ")+QString::number(ellipse[x2][y2]->x())
-                                    +QString("\n neary: ")+QString::number(ellipse[x2][y2]->y())
-                                    +QString("\n x: ")+QString::number(x2)
-                                    +QString("\n y: ")+QString::number(y2)
-                                    +QString("\n d: ")+QString::number(d)
-                                    +QString("\n d: ")+QString::number(dX)
-                                    +QString("\n d: ")+QString::number(dY));
-           break;}
-           }
-
-
-               if(kk==4){
-               ii++;kk=0;
-               }
-                }
-       else if((j== vector_size-1)&&(ii==vector_size-1)){
-           adjust_border_node(0,0,curr_leader);
-           adjust_border_node(vector_size-1,0,curr_leader);
-           adjust_border_node(0,vector_size-1,curr_leader);
-           adjust_border_node(vector_size-1,vector_size-1,curr_leader);
-           kk=1;
-       }
-       }
+    }
 
 
 
