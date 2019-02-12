@@ -405,6 +405,16 @@ void set_df_for_all(){
 
 
 
+void node::set_num_fict_node(int a)
+{
+    num_fict_node=a;
+}
+
+int node::get_num_fict_node()
+{
+    return num_fict_node;
+}
+
 bool node::get_bordernode()
 {
     return bordernode;
@@ -1316,6 +1326,7 @@ node::node()//constructor
       neigh_SE1=0;
       neigh_SW1=0;
       frac_node_side=-1;
+      num_fict_node=0;
 
 }
 
@@ -1347,6 +1358,7 @@ node::node(int a, int b)
     neigh_NW1=0;
     neigh_SE1=0;
     neigh_SW1=0;frac_node_side=-1;
+    num_fict_node=0;
 }
 
 void node::set_speed(double speed)
@@ -1973,7 +1985,16 @@ void node::keyPressEvent(QKeyEvent *event)
         if(file_open)
             File.close();
         exit(0);
-    }
+    }else if(event->key() == Qt::Key_Asterisk){// close the program
+         for(int ii=0;ii<vector_size;ii++){
+              qDebug()<<"row num:"<< ii;
+             for(int jj=0;jj<vector_size;jj++){
+                 qDebug()<<ellipse[ii][jj]->get_num_fict_node()<<" ";
+             }
+
+         }
+     }
+
 
 
 
@@ -2008,6 +2029,12 @@ void node::keyPressEvent(QKeyEvent *event)
                        +QString("\n healing_threshold: ") +QString::number(healing_threshold)
                        +QString("\n fracture_threshold: ") +QString::number(fracture_threshold));
 }
+
+
+
+
+
+
 
 
 

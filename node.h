@@ -11,6 +11,7 @@ class node : public QGraphicsEllipseItem
     double df;
     bool isleader;
     bool bordernode;
+    int num_fict_node;
 
 
 
@@ -35,6 +36,9 @@ public:
     bool  neigh_NW1;
     bool  neigh_SE1;
     bool  neigh_SW1;
+    void set_num_fict_node(int a);
+    int get_num_fict_node();
+
 
 
 
@@ -53,6 +57,7 @@ public:
     node * neigh_NW;
     node * neigh_SE;
     node * neigh_SW;
+    node * linked_frac_nodes[5];
     void init_neigh(int i, int j);
     bool get_frac_flag();
     void set_frac_flag(bool data);

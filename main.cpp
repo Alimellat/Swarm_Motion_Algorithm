@@ -8,7 +8,7 @@
 #include <QGraphicsTextItem>
 #include <QString>
 #include <QFile>
-bool showborder=0;
+bool showborder=1;
 bool speed_flag=0;
 //QFile File("s.txt");
 bool frac_flag[300];
@@ -21,14 +21,14 @@ int repeat_counter=0;
 const int leader_size=20;
 float speed=3.5;
 const float step_size=50;
-float fracture_threshold=100;
+float fracture_threshold=3;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
 node * ellipse_frac[300];
 QGraphicsTextItem * text;
 int leaderx,leadery;
-int current_leader_num=1;
+int current_leader_num=10;
 
  QGraphicsView *view;
  const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
@@ -38,6 +38,22 @@ int current_leader_num=1;
                                           {1,9},{1,2}};
 
 
+
+
+ void bind_fict_nodes(){//remember to delcare it static to follow standards
+     int i;
+     for (i=2;i<vector_size-2;i++ ){//side nodes except for the nodes at the top left and right, bottom lrft and right
+         ellipse[i][1]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
+         ellipse[vector_size-2][i]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
+         ellipse[i][vector_size-2]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
+         ellipse[1][i]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
+
+     }
+     ellipse[1][1]->set_num_fict_node(3);
+     ellipse[vector_size-2][1]->set_num_fict_node(3);
+     ellipse[vector_size-2][vector_size-2]->set_num_fict_node(3);
+     ellipse[1][vector_size-2]->set_num_fict_node(3);
+ }
 int main(int argc,char *argv[]){
 
 
@@ -161,6 +177,7 @@ int main(int argc,char *argv[]){
 
 
     //adding the text to the scene
+    bind_fict_nodes();
      scene->addItem(text);
 
     view->showMaximized();
