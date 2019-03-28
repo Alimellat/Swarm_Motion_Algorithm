@@ -1475,6 +1475,9 @@ double node::calc_dist(node * a){
     return (sqrt((dx*dx)+(dy*dy)));
 
 }
+
+
+
 void node::frac_check(){
     int frac_indice;
     if(calc_dist(neigh_W) > fracture_threshold*step_size  && !neigh_W1){
@@ -1675,7 +1678,114 @@ void node::frac_check(){
 
 
 
+void check_connected_nodes(int ii, int jj, int k1, int k2){
+    node * temp;
 
+   temp = ellipse[ii][jj]->neigh_NE;
+   for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+       if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+            qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                   <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                        ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+       }
+
+
+   }
+    temp = ellipse[ii][jj]->neigh_E;
+    for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+        if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+             qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                    <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                         ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+        }
+
+
+    }
+     temp = ellipse[ii][jj]->neigh_SE;
+     for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+         if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+              qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                     <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                          ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+         }
+
+
+     }
+
+     temp = ellipse[ii][jj]->neigh_S;
+     for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+         if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+              qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                     <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                          ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+         }
+
+
+     }
+
+
+
+      temp = ellipse[ii][jj]->neigh_SW;
+      for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+          if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+               qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                      <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                           ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+          }
+
+
+      }
+
+
+
+       temp = ellipse[ii][jj]->neigh_W;
+       for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+           if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                       <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                            ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+           }
+
+
+       }
+
+
+
+
+        temp = ellipse[ii][jj]->neigh_NW;
+        for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+            if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                 qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                        <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                             ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+            }
+
+
+        }
+
+
+
+
+         temp = ellipse[ii][jj]->neigh_N;
+          for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+              if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                   qDebug()<<"there is a connection between node"<< ii<<"  "<<jj<<"and a fict node"
+                          <<ellipse[k1][k2]->linked_frac_nodes[j]->vec_x<<"  "<<
+                               ellipse[k1][k2]->linked_frac_nodes[j]->vec_y<< "linked to node "<< k1<<" "<<k2;
+
+              }
+
+
+          }
+
+}
 
 
 
@@ -2018,6 +2128,44 @@ void node::keyPressEvent(QKeyEvent *event)
              }
 
          }
+
+
+
+         for (int i1=1 ; i1<vector_size-1;i1++ ){
+             for (int i2=1 ; i2<vector_size-1; i2++ ){
+                 if(i1 - 1 > 0){
+                         check_connected_nodes(i1,i2,i1 - 1 ,i2);
+
+                         if(i2 - 1 > 0)
+                             check_connected_nodes(i1,i2,i1 - 1 ,i2 - 1);
+                         if(i2 + 1 < vector_size-1)
+                             check_connected_nodes(i1,i2,i1 - 1 ,i2 + 1);
+                 }
+
+                 if(i1 + 1 < vector_size-1){
+                         check_connected_nodes(i1,i2,i1 + 1 ,i2);
+
+                         if(i2 - 1 > 0)
+                             check_connected_nodes(i1,i2,i1 + 1 ,i2 - 1);
+                         if(i2 + 1 < vector_size-1)
+                             check_connected_nodes(i1,i2,i1 + 1 ,i2 + 1);
+                 }
+
+                 if(i2 - 1 > 0)
+                     check_connected_nodes(i1,i2,i1,i2 - 1);
+                 if(i2 + 1 < vector_size-1)
+                     check_connected_nodes(i1,i2,i1 ,i2 + 1);
+             }
+         }
+
+      //  check_connected_nodes(vector_size-2,1,vector_size-3,1);
+
+
+
+
+
+
+
      }
 
 
