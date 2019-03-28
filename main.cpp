@@ -21,14 +21,14 @@ int repeat_counter=0;
 const int leader_size=20;
 float speed=3.5;
 const float step_size=50;
-float fracture_threshold=300;
+float fracture_threshold=10;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
 node * ellipse_frac[300];
 QGraphicsTextItem * text;
 int leaderx,leadery;
-int current_leader_num=10;
+int current_leader_num=1;
 
  QGraphicsView *view;
  const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},

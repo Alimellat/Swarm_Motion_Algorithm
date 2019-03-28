@@ -1476,7 +1476,96 @@ double node::calc_dist(node * a){
 
 }
 
+void frac_heal_linked_nodes(int ii, int jj, int k1, int k2, bool a){
+    node * temp;
 
+   temp = ellipse[ii][jj]->neigh_NE;
+   for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+       if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+            ellipse [ii][jj]->neigh_NE1=a;
+
+       }
+
+
+   }
+    temp = ellipse[ii][jj]->neigh_E;
+    for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+        if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+             ellipse [ii][jj]->neigh_E1=a;
+
+        }
+
+
+    }
+     temp = ellipse[ii][jj]->neigh_SE;
+     for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+         if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+              ellipse [ii][jj]->neigh_SE1=a;
+         }
+
+
+     }
+
+     temp = ellipse[ii][jj]->neigh_S;
+     for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+         if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+              ellipse [ii][jj]->neigh_S1=a;
+
+         }
+
+
+     }
+
+
+
+      temp = ellipse[ii][jj]->neigh_SW;
+      for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+          if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                ellipse [ii][jj]->neigh_SW1=a;
+
+          }
+
+
+      }
+
+
+
+       temp = ellipse[ii][jj]->neigh_W;
+       for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+           if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                 ellipse [ii][jj]->neigh_W1=a;
+
+           }
+
+
+       }
+
+
+
+
+        temp = ellipse[ii][jj]->neigh_NW;
+        for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+            if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                  ellipse [ii][jj]->neigh_NW1=a;
+
+            }
+
+
+        }
+
+
+
+
+         temp = ellipse[ii][jj]->neigh_N;
+          for (int j=0 ; j< ellipse[k1][k2]->get_num_fict_node();j++){
+              if(ellipse[k1][k2]->linked_frac_nodes[j] == temp){
+                    ellipse [ii][jj]->neigh_N1=a;
+
+              }
+
+
+          }
+}
 
 void node::frac_check(){
     int frac_indice;
@@ -1499,6 +1588,8 @@ void node::frac_check(){
             //neigh_W=ellipse_frac[frac_indice];
             //ellipse_frac[frac_indice]->frac_node_side=West;
             neigh_W1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_W->vec_x,neigh_W->vec_y,1);
+            frac_heal_linked_nodes(neigh_W->vec_x,neigh_W->vec_y,vec_x,vec_y,1);
 
         }
     }
@@ -1524,6 +1615,8 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_S1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_S->vec_x,neigh_S->vec_y,1);
+            frac_heal_linked_nodes(neigh_S->vec_x,neigh_S->vec_y,vec_x,vec_y,1);
 
         }
     }
@@ -1549,6 +1642,9 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_N1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_N->vec_x,neigh_N->vec_y,1);
+            frac_heal_linked_nodes(neigh_N->vec_x,neigh_N->vec_y,vec_x,vec_y,1);
+
 
         }
     }
@@ -1572,6 +1668,9 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_E1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_E->vec_x,neigh_E->vec_y,1);
+            frac_heal_linked_nodes(neigh_E->vec_x,neigh_E->vec_y,vec_x,vec_y,1);
+
 
         }
     }
@@ -1596,6 +1695,8 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_NW1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_NW->vec_x,neigh_NW->vec_y,1);
+            frac_heal_linked_nodes(neigh_NW->vec_x,neigh_NW->vec_y,vec_x,vec_y,1);
 
         }
     }
@@ -1620,6 +1721,8 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_NE1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_NE->vec_x,neigh_NE->vec_y,1);
+            frac_heal_linked_nodes(neigh_NE->vec_x,neigh_NE->vec_y,vec_x,vec_y,1);
 
         }
     }
@@ -1644,6 +1747,8 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_SW1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_SW->vec_x,neigh_SW->vec_y,1);
+            frac_heal_linked_nodes(neigh_SW->vec_x,neigh_SW->vec_y,vec_x,vec_y,1);
 
         }
     }
@@ -1668,6 +1773,8 @@ void node::frac_check(){
     //        neigh_W=ellipse_frac[frac_indice];
     //        frac_flag[frac_indice]=1;
             neigh_SE1=1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_SE->vec_x,neigh_SE->vec_y,1);
+            frac_heal_linked_nodes(neigh_SE->vec_x,neigh_SE->vec_y,vec_x,vec_y,1);
 
         }
     }
