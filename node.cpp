@@ -29,6 +29,7 @@ double test_dx,test_dy;
 extern bool frac_flag[];
 
 
+
 int curr_leader=0;
 double leader_disp=0;
 bool border_type=1;
@@ -404,6 +405,21 @@ void set_df_for_all(){
 
 
 
+// possibly redundant function
+
+void node::bind_fict_nodes(bool is_edge, int side)
+{
+    if(is_edge==false){
+        switch (side) {
+        case 1:{//top side
+            //linked_frac_nodes[0]=ellipse
+            break;}
+        default:
+            break;
+        }
+
+    }
+}
 
 void node::set_num_fict_node(int a)
 {
@@ -1987,9 +2003,18 @@ void node::keyPressEvent(QKeyEvent *event)
         exit(0);
     }else if(event->key() == Qt::Key_Asterisk){// close the program
          for(int ii=0;ii<vector_size;ii++){
-              qDebug()<<"row num:"<< ii;
+              qDebug()<<"column num:"<< ii;
              for(int jj=0;jj<vector_size;jj++){
-                 qDebug()<<ellipse[ii][jj]->get_num_fict_node()<<" ";
+                 qDebug()<<"node: "<<ellipse[ii][jj]->vec_x<<"  "<<ellipse[ii][jj]->vec_y<<"num links:"<<ellipse[ii][jj]->get_num_fict_node()<<" ";
+                 if(ellipse[ii][jj]->get_num_fict_node()>0){
+                     for(int i=0;i<ellipse[ii][jj]->get_num_fict_node();i++){
+
+                        qDebug()<<"linked "<<i<<" is: "<< ellipse[ii][jj]->linked_frac_nodes[i]->vec_x<<
+                                  " "<<ellipse[ii][jj]->linked_frac_nodes[i]->vec_y;
+
+                     }
+
+                 }
              }
 
          }

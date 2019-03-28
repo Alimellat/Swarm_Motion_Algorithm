@@ -21,7 +21,7 @@ int repeat_counter=0;
 const int leader_size=20;
 float speed=3.5;
 const float step_size=50;
-float fracture_threshold=3;
+float fracture_threshold=300;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
@@ -40,20 +40,63 @@ int current_leader_num=10;
 
 
 
- void bind_fict_nodes(){//remember to delcare it static to follow standards
+ void bind_fict_nodes(){//remember to delcare it static in a class to follow standards
      int i;
      for (i=2;i<vector_size-2;i++ ){//side nodes except for the nodes at the top left and right, bottom lrft and right
-         ellipse[i][1]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
-         ellipse[vector_size-2][i]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
-         ellipse[i][vector_size-2]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
-         ellipse[1][i]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
 
-     }
+         ellipse[i][1]->set_num_fict_node(1);//top side nodes each have 1 fictitious node connected to them
+         ellipse[i][1]->linked_frac_nodes[0]=ellipse[i][0];
+
+         ellipse[vector_size-2][i]->set_num_fict_node(1);//right side nodes each have 1 fictitious node connected to them
+         ellipse[vector_size-2][i]->linked_frac_nodes[0]=ellipse[vector_size-1][i];
+
+         ellipse[i][vector_size-2]->set_num_fict_node(1);//bottom side nodes each have 1 fictitious node connected to them
+         ellipse[i][vector_size-2]->linked_frac_nodes[0]=ellipse[i][vector_size-1];
+
+         ellipse[1][i]->set_num_fict_node(1);//left side nodes each have 1 fictitious node connected to them
+         ellipse[1][i]->linked_frac_nodes[0]=ellipse[0][i];
+     }//checked this for loop, it must work properly
      ellipse[1][1]->set_num_fict_node(3);
      ellipse[vector_size-2][1]->set_num_fict_node(3);
      ellipse[vector_size-2][vector_size-2]->set_num_fict_node(3);
      ellipse[1][vector_size-2]->set_num_fict_node(3);
+
+
+
+
+     ellipse[1][1]->linked_frac_nodes[0]=ellipse[0][1];//top left node
+     ellipse[1][1]->linked_frac_nodes[1]=ellipse[0][0];
+     ellipse[1][1]->linked_frac_nodes[2]=ellipse[1][0];
+
+
+
+     ellipse[vector_size-2][1]->linked_frac_nodes[0]=ellipse[vector_size-2][0];//top right node
+     ellipse[vector_size-2][1]->linked_frac_nodes[1]=ellipse[vector_size-1][0];
+     ellipse[vector_size-2][1]->linked_frac_nodes[2]=ellipse[vector_size-1][1];
+
+
+
+     ellipse[vector_size-2][vector_size-2]->linked_frac_nodes[0]=ellipse[vector_size-1][vector_size-2];//bottom right side
+     ellipse[vector_size-2][vector_size-2]->linked_frac_nodes[1]=ellipse[vector_size-1][vector_size-1];
+     ellipse[vector_size-2][vector_size-2]->linked_frac_nodes[2]=ellipse[vector_size-2][vector_size-1];
+
+
+
+     ellipse[1][vector_size-2]->linked_frac_nodes[0]=ellipse[1][vector_size-1];//bottom left
+     ellipse[1][vector_size-2]->linked_frac_nodes[1]=ellipse[0][vector_size-1];
+     ellipse[1][vector_size-2]->linked_frac_nodes[2]=ellipse[0][vector_size-2];
  }
+
+
+
+
+
+
+
+
+
+
+
 int main(int argc,char *argv[]){
 
 
@@ -177,10 +220,11 @@ int main(int argc,char *argv[]){
 
 
     //adding the text to the scene
-    bind_fict_nodes();
+
      scene->addItem(text);
 
     view->showMaximized();
+    bind_fict_nodes();
 
     return a.exec();
 }
