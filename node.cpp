@@ -438,185 +438,6 @@ bool node::get_bordernode()
 
 
 
-void node::heal_check()
-{
-    if(neigh_N1 ||
-            neigh_W1
-            ||  neigh_E1
-            ||  neigh_S1
-            ||  neigh_NE1
-            ||  neigh_NW1
-            ||  neigh_SE1
-            ||  neigh_SW1){//check if there are any fractures
-                    //heal fractures
-        if(neigh_N1 && (calc_dist(ellipse[vec_x][vec_y-1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x<<"  "<<vec_y-1<<"\n";
-            neigh_N1=0;
-//            frac_flag[fracindice[north]]=0;
-//            ellipse_frac[fracindice[north]]->frac_node_side=-1;
-
-//            fracindice[north]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x][vec_y-1]->neigh_S1=0;
-//            frac_flag[ellipse[vec_x][vec_y-1]->fracindice[south]]=0;
-//            ellipse_frac[ellipse[vec_x][vec_y-1]->fracindice[south]]->frac_node_side=-1;
-//            ellipse[vec_x][vec_y-1]->fracindice[south]=-1;
-
-        }//north fracture
-
-
-        if(neigh_W1 && (calc_dist(ellipse[vec_x-1][vec_y]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y<<"\n";
-            neigh_W1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            //ellipse[vec_x-1][vec_y]->neigh_E1=0;
-//            frac_flag[fracindice[West]]=0;
-//            ellipse_frac[fracindice[West]]->frac_node_side=-1;
-//            fracindice[West]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x-1][vec_y]->neigh_E1=0;
-//            frac_flag[ellipse[vec_x-1][vec_y]->fracindice[east]]=0;
-//            ellipse_frac[ellipse[vec_x-1][vec_y]->fracindice[east]]->frac_node_side=-1;
-//            ellipse[vec_x-1][vec_y]->fracindice[east]=-1;
-        }//west fracture
-
-        if(neigh_E1 && (calc_dist(ellipse[vec_x+1][vec_y]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+1<<"  "<<vec_y<<"\n";
-            neigh_E1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            //ellipse[vec_x+1][vec_y]->neigh_W1=0;
-
-//            frac_flag[fracindice[east]]=0;
-//            ellipse_frac[fracindice[east]]->frac_node_side=-1;
-//            fracindice[east]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x+1][vec_y]->neigh_W1=0;
-//            frac_flag[ellipse[vec_x+1][vec_y]->fracindice[West]]=0;
-//            ellipse_frac[ellipse[vec_x+1][vec_y]->fracindice[West]]->frac_node_side=-1;
-//            ellipse[vec_x+1][vec_y]->fracindice[West]=-1;
-
-
-        }//east fracture
-
-
-
-        if(neigh_S1 && (calc_dist(ellipse[vec_x][vec_y+1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x<<"  "<<vec_y+1<<"\n";
-            neigh_S1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-           // ellipse[vec_x][vec_y+1]->neigh_N1=0;
-
-
-
-//            frac_flag[fracindice[south]]=0;
-//            ellipse_frac[fracindice[south]]->frac_node_side=-1;
-//            fracindice[south]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x][vec_y+1]->neigh_N1=0;
-//            frac_flag[ellipse[vec_x][vec_y+1]->fracindice[north]]=0;
-//            ellipse_frac[ellipse[vec_x][vec_y+1]->fracindice[north]]->frac_node_side=-1;
-//            ellipse[vec_x][vec_y+1]->fracindice[north]=-1;
-        }//south fracture
-
-
-        if(neigh_NW1 && (calc_dist(ellipse[vec_x-1][vec_y-1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y-1<<"\n";
-            neigh_NW1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            //ellipse[vec_x-1][vec_y-1]->neigh_SE1=0;
-
-//            frac_flag[fracindice[northwest]]=0;
-//             ellipse_frac[fracindice[northwest]]->frac_node_side=-1;
-//            fracindice[northwest]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x-1][vec_y-1]->neigh_SE1=0;
-//            frac_flag[ellipse[vec_x-1][vec_y-1]->fracindice[southeast]]=0;
-//            ellipse_frac[ellipse[vec_x-1][vec_y-1]->fracindice[southeast]]->frac_node_side=-1;
-//            ellipse[vec_x-1][vec_y-1]->fracindice[southeast]=-1;
-
-
-
-
-        }//North west fracture
-
-        if(neigh_SW1 && (calc_dist(ellipse[vec_x-1][vec_y+1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y+1<<"\n";
-            neigh_SW1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            //ellipse[vec_x-1][vec_y+1]->neigh_NE1=0;
-
-
-//            frac_flag[fracindice[southwest]]=0;
-//            ellipse_frac[fracindice[southwest]]->frac_node_side=-1;
-//            fracindice[southwest]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x-1][vec_y+1]->neigh_NE1=0;
-//            frac_flag[ellipse[vec_x-1][vec_y+1]->fracindice[northeast]]=0;
-//            ellipse_frac[ellipse[vec_x-1][vec_y+1]->fracindice[northeast]]->frac_node_side=-1;
-//            ellipse[vec_x-1][vec_y+1]->fracindice[northeast]=-1;
-
-
-
-
-
-        }//south west fracture
-
-        if(neigh_SE1 && (calc_dist(ellipse[vec_x+1][vec_y+1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+11<<"  "<<vec_y+1<<"\n";
-            neigh_SE1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-          //  ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
-
-
-//            frac_flag[fracindice[northeast]]=0;
-//            ellipse_frac[fracindice[northeast]]->frac_node_side=-1;
-//            fracindice[northeast]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x+1][vec_y+1]->neigh_NW1=0;
-//            frac_flag[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]=0;
-//            ellipse_frac[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]->frac_node_side=-1;
-//            ellipse[vec_x+1][vec_y-1]->fracindice[southwest]=-1;
-
-
-
-
-        }
-        if(neigh_NE1 && (calc_dist(ellipse[vec_x+1][vec_y-1]) <= healing_threshold*step_size)){
-            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+11<<"  "<<vec_y-1<<"\n";
-            neigh_NE1=0;
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-          //  ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
-
-
-//            frac_flag[fracindice[northeast]]=0;
-//            ellipse_frac[fracindice[northeast]]->frac_node_side=-1;
-//            fracindice[northeast]=-1;
-
-           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
-            ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
-//            frac_flag[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]=0;
-//            ellipse_frac[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]->frac_node_side=-1;
-//            ellipse[vec_x+1][vec_y-1]->fracindice[southwest]=-1;
-
-
-
-
-        }
-
-
-
-
-    }
-
-}
-
 void node::set_bordernode(bool a)
 {
     bordernode=a;
@@ -1409,6 +1230,10 @@ void set_new_pos_All(){
 
 void run_alg(){
 
+
+
+
+
     if(dynamic_move) {
         for(int l=0;l<current_leader_num;l++){
                 for(int j=1;j<vector_size-2;j++){
@@ -1440,6 +1265,12 @@ void run_alg(){
      set_new_pos_All();
 
      }
+    for (int ii=1;ii<vector_size-1;ii++){
+        for (int jj=1;jj<vector_size-1;jj++){
+            ellipse[ii][jj]->frac_check();
+            ellipse[ii][jj]->heal_check();
+        }
+    }
 
   // adjust_border_node(a,b);
  //    reset_disp_for_all();
@@ -1448,12 +1279,7 @@ void run_alg(){
 
      }*/
 
-    for (int ii=1;ii<vector_size-1;ii++){
-        for (int jj=1;jj<vector_size-1;jj++){
-            ellipse[ii][jj]->frac_check();
-            ellipse[ii][jj]->heal_check();
-        }
-    }
+
    // for(int f=0;f<300;f++){
      //   if(frac_flag[f]){
        //     ellipse_frac[f]->adjust_frac_node();
@@ -1566,6 +1392,198 @@ void frac_heal_linked_nodes(int ii, int jj, int k1, int k2, bool a){
 
           }
 }
+
+
+void node::heal_check()
+{
+    if(neigh_N1
+            ||neigh_W1
+            ||  neigh_E1
+            ||  neigh_S1
+            ||  neigh_NE1
+            ||  neigh_NW1
+            ||  neigh_SE1
+            ||  neigh_SW1){//check if there are any fractures
+                    //heal fractures
+        if(neigh_N1 && (calc_dist(ellipse[vec_x][vec_y-1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x<<"  "<<vec_y-1<<"\n";
+            neigh_N1=0;
+//            frac_flag[fracindice[north]]=0;
+//            ellipse_frac[fracindice[north]]->frac_node_side=-1;
+
+//            fracindice[north]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x][vec_y-1]->neigh_S1=0;
+//            frac_flag[ellipse[vec_x][vec_y-1]->fracindice[south]]=0;
+//            ellipse_frac[ellipse[vec_x][vec_y-1]->fracindice[south]]->frac_node_side=-1;
+//            ellipse[vec_x][vec_y-1]->fracindice[south]=-1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_N->vec_x,neigh_N->vec_y,0);
+            frac_heal_linked_nodes(neigh_N->vec_x,neigh_N->vec_y,vec_x,vec_y,0);
+        }//north fracture
+
+
+        if(neigh_W1 && (calc_dist(ellipse[vec_x-1][vec_y]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y<<"\n";
+            neigh_W1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            //ellipse[vec_x-1][vec_y]->neigh_E1=0;
+//            frac_flag[fracindice[West]]=0;
+//            ellipse_frac[fracindice[West]]->frac_node_side=-1;
+//            fracindice[West]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x-1][vec_y]->neigh_E1=0;
+//            frac_flag[ellipse[vec_x-1][vec_y]->fracindice[east]]=0;
+//            ellipse_frac[ellipse[vec_x-1][vec_y]->fracindice[east]]->frac_node_side=-1;
+//            ellipse[vec_x-1][vec_y]->fracindice[east]=-1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_W->vec_x,neigh_W->vec_y,0);
+            frac_heal_linked_nodes(neigh_W->vec_x,neigh_W->vec_y,vec_x,vec_y,0);
+        }//west fracture
+
+        if(neigh_E1 && (calc_dist(ellipse[vec_x+1][vec_y]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+1<<"  "<<vec_y<<"\n";
+            neigh_E1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            //ellipse[vec_x+1][vec_y]->neigh_W1=0;
+
+//            frac_flag[fracindice[east]]=0;
+//            ellipse_frac[fracindice[east]]->frac_node_side=-1;
+//            fracindice[east]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x+1][vec_y]->neigh_W1=0;
+//            frac_flag[ellipse[vec_x+1][vec_y]->fracindice[West]]=0;
+//            ellipse_frac[ellipse[vec_x+1][vec_y]->fracindice[West]]->frac_node_side=-1;
+//            ellipse[vec_x+1][vec_y]->fracindice[West]=-1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_E->vec_x,neigh_E->vec_y,0);
+            frac_heal_linked_nodes(neigh_E->vec_x,neigh_E->vec_y,vec_x,vec_y,0);
+
+
+        }//east fracture
+
+
+
+        if(neigh_S1 && (calc_dist(ellipse[vec_x][vec_y+1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x<<"  "<<vec_y+1<<"\n";
+            neigh_S1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+           // ellipse[vec_x][vec_y+1]->neigh_N1=0;
+
+
+
+//            frac_flag[fracindice[south]]=0;
+//            ellipse_frac[fracindice[south]]->frac_node_side=-1;
+//            fracindice[south]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x][vec_y+1]->neigh_N1=0;
+//            frac_flag[ellipse[vec_x][vec_y+1]->fracindice[north]]=0;
+//            ellipse_frac[ellipse[vec_x][vec_y+1]->fracindice[north]]->frac_node_side=-1;
+//            ellipse[vec_x][vec_y+1]->fracindice[north]=-1;
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_S->vec_x,neigh_S->vec_y,0);
+            frac_heal_linked_nodes(neigh_S->vec_x,neigh_S->vec_y,vec_x,vec_y,0);
+        }//south fracture
+
+
+        if(neigh_NW1 && (calc_dist(ellipse[vec_x-1][vec_y-1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y-1<<"\n";
+            neigh_NW1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            //ellipse[vec_x-1][vec_y-1]->neigh_SE1=0;
+
+//            frac_flag[fracindice[northwest]]=0;
+//             ellipse_frac[fracindice[northwest]]->frac_node_side=-1;
+//            fracindice[northwest]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x-1][vec_y-1]->neigh_SE1=0;
+//            frac_flag[ellipse[vec_x-1][vec_y-1]->fracindice[southeast]]=0;
+//            ellipse_frac[ellipse[vec_x-1][vec_y-1]->fracindice[southeast]]->frac_node_side=-1;
+//            ellipse[vec_x-1][vec_y-1]->fracindice[southeast]=-1;
+
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_NW->vec_x,neigh_NW->vec_y,0);
+            frac_heal_linked_nodes(neigh_NW->vec_x,neigh_NW->vec_y,vec_x,vec_y,0);
+
+
+        }//North west fracture
+
+        if(neigh_SW1 && (calc_dist(ellipse[vec_x-1][vec_y+1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x-1<<"  "<<vec_y+1<<"\n";
+            neigh_SW1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            //ellipse[vec_x-1][vec_y+1]->neigh_NE1=0;
+
+
+//            frac_flag[fracindice[southwest]]=0;
+//            ellipse_frac[fracindice[southwest]]->frac_node_side=-1;
+//            fracindice[southwest]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x-1][vec_y+1]->neigh_NE1=0;
+//            frac_flag[ellipse[vec_x-1][vec_y+1]->fracindice[northeast]]=0;
+//            ellipse_frac[ellipse[vec_x-1][vec_y+1]->fracindice[northeast]]->frac_node_side=-1;
+//            ellipse[vec_x-1][vec_y+1]->fracindice[northeast]=-1;
+
+
+
+
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_SW->vec_x,neigh_SW->vec_y,0);
+            frac_heal_linked_nodes(neigh_SW->vec_x,neigh_SW->vec_y,vec_x,vec_y,0);
+        }//south west fracture
+
+        if(neigh_SE1 && (calc_dist(ellipse[vec_x+1][vec_y+1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+11<<"  "<<vec_y+1<<"\n";
+            neigh_SE1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+          //  ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
+
+
+//            frac_flag[fracindice[northeast]]=0;
+//            ellipse_frac[fracindice[northeast]]->frac_node_side=-1;
+//            fracindice[northeast]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x+1][vec_y+1]->neigh_NW1=0;
+//            frac_flag[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]=0;
+//            ellipse_frac[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]->frac_node_side=-1;
+//            ellipse[vec_x+1][vec_y-1]->fracindice[southwest]=-1;
+
+
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_SE->vec_x,neigh_SE->vec_y,0);
+            frac_heal_linked_nodes(neigh_SE->vec_x,neigh_SE->vec_y,vec_x,vec_y,0);
+
+        }
+        if(neigh_NE1 && (calc_dist(ellipse[vec_x+1][vec_y-1]) <= healing_threshold*step_size)){
+            qDebug()<<"frac healed between"<<vec_x<<" "<<vec_y<<"\n"<<"     "<<vec_x+11<<"  "<<vec_y-1<<"\n";
+            neigh_NE1=0;
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+          //  ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
+
+
+//            frac_flag[fracindice[northeast]]=0;
+//            ellipse_frac[fracindice[northeast]]->frac_node_side=-1;
+//            fracindice[northeast]=-1;
+
+           // neigh_W->neigh_E1=1;  adjusting the fictitous ones
+            ellipse[vec_x+1][vec_y-1]->neigh_SW1=0;
+//            frac_flag[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]=0;
+//            ellipse_frac[ellipse[vec_x+1][vec_y-1]->fracindice[southwest]]->frac_node_side=-1;
+//            ellipse[vec_x+1][vec_y-1]->fracindice[southwest]=-1;
+
+
+
+            frac_heal_linked_nodes(vec_x,vec_y,neigh_NE->vec_x,neigh_NE->vec_y,0);
+            frac_heal_linked_nodes(neigh_NE->vec_x,neigh_NE->vec_y,vec_x,vec_y,0);
+        }
+
+
+
+
+    }
+
+}
+
 
 void node::frac_check(){
     int frac_indice;
