@@ -25,9 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    node.cpp
+    node.cpp \
+    obstacle.cpp
 
 HEADERS += \
-    node.h
+    node.h \
+    obstacle.h
 
 FORMS +=

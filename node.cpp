@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QThread>
 #include <QDebug>
+
 #define West 0
 #define northwest 1
 #define north 2
@@ -82,7 +83,8 @@ extern QGraphicsTextItem * text;
 extern const int vector_size=12;
 extern node * ellipse[vector_size][vector_size];
 extern int leaderx,leadery;
-extern  QGraphicsView *view;
+extern  QGraphicsView * view;
+extern QGraphicsScene * scene1;
 double df;
 const float step_size=50;
 int j,ii,kk;
@@ -2326,6 +2328,11 @@ void node::keyPressEvent(QKeyEvent *event)
     text->setPlainText(QString("speed: ") +QString::number(speed)
                        +QString("\n healing_threshold: ") +QString::number(healing_threshold)
                        +QString("\n fracture_threshold: ") +QString::number(fracture_threshold));
+
+    view->repaint();
+    view->update();
+    //scene1->repaint();
+    scene1->update();
 }
 
 

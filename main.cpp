@@ -8,8 +8,9 @@
 #include <QGraphicsTextItem>
 #include <QString>
 #include <QFile>
+#include "obstacle.h"
 bool showborder=1;
-bool speed_flag=0;
+bool speed_flag=1;
 //QFile File("s.txt");
 bool frac_flag[300];
 
@@ -17,20 +18,23 @@ bool frac_flag[300];
 
 
 int repeat_counter=0;
+const int obstacle_size = 5;
 
 const int leader_size=20;
 float speed=3.5;
 const float step_size=50;
-float fracture_threshold=3;
+float fracture_threshold=100;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
+obstacle *obstacles[obstacle_size];
 node * ellipse_frac[300];
 QGraphicsTextItem * text;
 int leaderx,leadery;
 int current_leader_num=10;
+QGraphicsScene *scene1;
 
- QGraphicsView *view;
+QGraphicsView *view;
  const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                           {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                          {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
@@ -122,8 +126,8 @@ int main(int argc,char *argv[]){
     //QLabel * label=new QLabel(&mainWindow);
     //label->setText("hello world");
 
-    QGraphicsScene *scene=new QGraphicsScene();
-    scene->setSceneRect(0,0,2000,2000);
+    scene1=new QGraphicsScene();
+    scene1->setSceneRect(0,0,2000,2000);
 
     leaderx=1;
     leadery=5;
@@ -138,7 +142,7 @@ int main(int argc,char *argv[]){
 
     if(!(j==vector_size-1 || j==0 || i==0 || i==vector_size-1)){
         ellipse[j][i]->init_neigh(j,i);
-        scene->addItem(ellipse[j][i]);
+        scene1->addItem(ellipse[j][i]);
     }
     if(j==vector_size-1 || j==0 || i==0 || i==vector_size-1){
 
@@ -149,7 +153,7 @@ int main(int argc,char *argv[]){
 
         // adding fictitious ones to the scene
         if(showborder)
-         scene->addItem(ellipse[j][i]);
+         scene1->addItem(ellipse[j][i]);
         if((i==0 && j==0) || (i==0 && j==vector_size-1) || (i==step_size-1 && j==0) || (i==step_size-1 && j==step_size-1)){
              ellipse[j][i]->set_border(true);
          }
@@ -159,6 +163,10 @@ int main(int argc,char *argv[]){
     }
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
+    for (int i=0;i<obstacle_size;i++){
+        obstacles[i]= new obstacle(400+14*50+i*40,400+14*50+i*40);
+        scene1->addItem(obstacles[i]);
+    }
 
     //initialize each node's neighbours
     for(int j=0;j<vector_size;j++){
@@ -201,8 +209,8 @@ int main(int argc,char *argv[]){
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setBrush(QBrush(Qt::cyan,Qt::SolidPattern));
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFlag(QGraphicsItem::ItemIsFocusable);//set it focusable
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFocus();
-    scene->setBackgroundBrush(QBrush(Qt::gray));
-    view= new QGraphicsView(scene);
+    scene1->setBackgroundBrush(QBrush(Qt::gray));
+    view= new QGraphicsView(scene1);
      //scene->setSceneRect(0,0,1920,1080);
     //scene->addItem(label);
 
@@ -221,7 +229,7 @@ int main(int argc,char *argv[]){
 
     //adding the text to the scene
 
-     scene->addItem(text);
+     scene1->addItem(text);
 
     view->showMaximized();
     bind_fict_nodes();
