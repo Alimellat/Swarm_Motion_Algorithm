@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QThread>
 #include <QDebug>
+#include "obstacle.h"
 
 #define West 0
 #define northwest 1
@@ -40,6 +41,8 @@ bool po=1;
 bool file_open=0;
 
 double test_curr_x,test_curr_y;
+const int obstacle_size=1;//extern
+extern obstacle *obstacles[obstacle_size];
 
 
 
@@ -86,7 +89,7 @@ extern int leaderx,leadery;
 extern  QGraphicsView * view;
 extern QGraphicsScene * scene1;
 double df;
-const float step_size=50;
+extern float step_size;
 int j,ii,kk;
 double d,XX,YY;
 double dX,dY;
@@ -98,9 +101,76 @@ double alpha1=0;//-25//25
 double alpha2=0;//-25//25
 int b=(vector_size-1),a=3;
 extern node * ellipse_frac[300];
+double calc_d(double x1,double y1, double x2,double y2){
+    double dx=x1-x2;
+    double dy=y1-y2;
+    return (sqrt((dx*dx)+(dy*dy)));
+}
+
+double get_cos(double x1, double y1, double x2,double y2){//the first set of arguments must be from the nodes
+    //and the second set from the obstacle
+   double d= calc_d(x1,y1,x2,y2);
+   return ((x1-x2)/d);
+
+}
+
+double get_sin(double x1, double y1, double x2,double y2){
+   double d= calc_d(x1,y1,x2,y2);
+   return ((y1-y2)/d);
+
+}
 
 
 
+
+void node::set_repul(){
+    for(int ii=0;ii<obstacle_size;ii++){
+        double repx,repy;
+        double d=calc_d(this->x(),this->y(),obstacles[ii]->x(),obstacles[ii]->y());
+        d/=step_size;
+        double co=get_cos(this->x(),this->y(),obstacles[ii]->x(),obstacles[ii]->y());
+        double si=get_sin(this->x(),this->y(),obstacles[ii]->x(),obstacles[ii]->y());
+        switch (obstacles[ii]->type) {
+        case 1:{
+
+            double z = (obstacles[ii]->get_weight())/(d*d);
+
+            repx=z*co*step_size;
+            repy=z*si*step_size;
+            repul_x+=repx;
+            repul_y+=repy;
+
+
+            break;}
+        case 2:{
+            double temp=d-obstacles[ii]->radious;
+            double z = (obstacles[ii]->get_weight())/(temp*temp);
+            repx=z*co*step_size;
+            repy=z*si*step_size;
+            repul_x+=repx;
+            repul_y+=repy;
+            break;
+        }
+        case 3:{
+
+            double z = (obstacles[ii]->get_weight())/((d*d)-(obstacles[ii]->radious*obstacles[ii]->radious));
+            repx=z*co*step_size;
+            repy=z*si*step_size;
+            repul_x+=repx;
+            repul_y+=repy;
+            break;
+        }
+        default:
+            break;
+        }
+
+
+
+
+
+    }
+    qDebug()<<" repux "<<repul_x<<" repuy "<<repul_y;
+}
 
 
 //delay function
@@ -156,12 +226,15 @@ void node::adjust_frac_node()
 }
 
 
+extern const int leader_vector[leader_size][2];
+
+/*
 const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                          {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                         {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
                                          {1,5},{1,6},{1,7},{1,8},
                                          {1,9},{1,2}};//must be declared at the both source files
-
+*/
 void node::set_leader(bool a)
 {
     isleader=a;
@@ -379,7 +452,9 @@ void node::set_place()
 
 
 
-    this->setPos(x()+sumx,y()+sumy);
+    this->setPos(x()+sumx+repul_x,y()+sumy+repul_y);
+    repul_x=0;
+    repul_y=0;
 }
 
 
@@ -1129,6 +1204,7 @@ void adjust_border_type2(int leader_num){
 void  move_all_nodes(){
     for(int i=1;i<vector_size-1;i++){
         for(int j=1;j<vector_size-1;j++){
+            ellipse[i][j]->set_repul();
             ellipse[i][j]->set_place();
         }
     }
@@ -1949,7 +2025,7 @@ void node::keyPressEvent(QKeyEvent *event)
         for (int i=0;i<vector_size;i++){
        // ellipse[j][i]= new node();
         //ellipse[j][i]->setRect(0,0,12,12);
-        ellipse[j][i]->setPos(400+j*50,400+i*50);
+        ellipse[j][i]->setPos(400+j*step_size,400+i*step_size);
         ellipse[j][i]->set_currx_curry();}}
 
     }

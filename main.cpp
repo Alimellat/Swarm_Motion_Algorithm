@@ -9,7 +9,7 @@
 #include <QString>
 #include <QFile>
 #include "obstacle.h"
-bool showborder=1;
+bool showborder=0;
 bool speed_flag=1;
 //QFile File("s.txt");
 bool frac_flag[300];
@@ -18,11 +18,11 @@ bool frac_flag[300];
 
 
 int repeat_counter=0;
-const int obstacle_size = 5;
+extern const int obstacle_size = 1;// number of obstacles
 
 const int leader_size=20;
 float speed=3.5;
-const float step_size=50;
+extern const float step_size=35;
 float fracture_threshold=100;
 float healing_threshold=1.5;
 const int vector_size =12;
@@ -31,11 +31,11 @@ obstacle *obstacles[obstacle_size];
 node * ellipse_frac[300];
 QGraphicsTextItem * text;
 int leaderx,leadery;
-int current_leader_num=10;
+int current_leader_num=1;
 QGraphicsScene *scene1;
 
 QGraphicsView *view;
- const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
+extern const int leader_vector[leader_size][2]={{vector_size-2,5},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                           {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                          {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
                                           {1,5},{1,6},{1,7},{1,8},
@@ -136,7 +136,7 @@ int main(int argc,char *argv[]){
     for (int i=0;i<vector_size;i++){
     ellipse[j][i]= new node(j,i);
     ellipse[j][i]->setRect(0,0,12,12);
-    ellipse[j][i]->setPos(400+j*50,400+i*50);
+    ellipse[j][i]->setPos(400+j*step_size,400+i*step_size);
     ellipse[j][i]->set_currx_curry();
 
 
@@ -164,7 +164,7 @@ int main(int argc,char *argv[]){
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
     for (int i=0;i<obstacle_size;i++){
-        obstacles[i]= new obstacle(400+14*50+i*40,400+14*50+i*40);
+        obstacles[i]= new obstacle(400+14*50+i*40,400+14*50+i*40,0.7,2,1);
         scene1->addItem(obstacles[i]);
     }
 
@@ -206,7 +206,7 @@ int main(int argc,char *argv[]){
 
 
     //change the color
-    ellipse[leader_vector[0][0]][leader_vector[0][1]]->setBrush(QBrush(Qt::cyan,Qt::SolidPattern));
+    //ellipse[leader_vector[0][0]][leader_vector[0][1]]->setBrush(QBrush(Qt::cyan,Qt::SolidPattern));
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFlag(QGraphicsItem::ItemIsFocusable);//set it focusable
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFocus();
     scene1->setBackgroundBrush(QBrush(Qt::gray));

@@ -13,6 +13,8 @@ class node : public QGraphicsEllipseItem
     bool isleader;
     bool bordernode;
     int num_fict_node;
+    double repul_x = 0;
+    double repul_y = 0;
 
 
 
@@ -50,6 +52,7 @@ public:
     bool get_bordernode();
     void heal_check();
     void set_bordernode(bool a);
+    void set_repul();
     int vec_x,vec_y;
     node * neigh_N;
     node * neigh_W;
