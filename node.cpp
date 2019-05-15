@@ -952,9 +952,15 @@ void adjust_all_total(){// adjust all nodes after all the leaders have moved
 }
 
 
+void node::mousePressEvent(QKeyEvent *event)
+{
+    ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFocus();
+}
 
-
-
+void node::focusOutEvent()
+{
+    this->setFocus();
+}
 
 
 
@@ -1243,6 +1249,8 @@ node::node()//constructor
       frac_node_side=-1;
       num_fict_node=0;
 
+
+
 }
 
 node::node(int a, int b)
@@ -1274,6 +1282,7 @@ node::node(int a, int b)
     neigh_SE1=0;
     neigh_SW1=0;frac_node_side=-1;
     num_fict_node=0;
+
 }
 
 void node::set_speed(double speed)

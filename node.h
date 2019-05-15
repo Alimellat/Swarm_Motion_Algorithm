@@ -78,6 +78,8 @@ public:
     void set_speed(double speed);
     double get_speed();
     void keyPressEvent(QKeyEvent * event);
+    void mousePressEvent(QKeyEvent * event);
+    void focusOutEvent();
     void set_dist(int,int);
     float getx();
     float gety();

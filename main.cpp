@@ -209,8 +209,11 @@ int main(int argc,char *argv[]){
     //ellipse[leader_vector[0][0]][leader_vector[0][1]]->setBrush(QBrush(Qt::cyan,Qt::SolidPattern));
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFlag(QGraphicsItem::ItemIsFocusable);//set it focusable
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFocus();
+    ellipse[leader_vector[0][0]][leader_vector[0][1]]->grabKeyboard();
+   // ellipse[leader_vector[0][0]][leader_vector[0][1]]->grabMouse();
     scene1->setBackgroundBrush(QBrush(Qt::gray));
     view= new QGraphicsView(scene1);
+
      //scene->setSceneRect(0,0,1920,1080);
     //scene->addItem(label);
 
@@ -230,9 +233,12 @@ int main(int argc,char *argv[]){
     //adding the text to the scene
 
      scene1->addItem(text);
+    // scene1->setAttribute(Qt::WA_TransparentForMouseEvents);
+     view->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     view->showMaximized();
     bind_fict_nodes();
 
     return a.exec();
+
 }
