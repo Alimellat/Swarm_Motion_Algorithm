@@ -16,7 +16,7 @@
 
 
 
-bool showborder=1;
+bool showborder=0;
 bool speed_flag=1;
 //QFile File("s.txt");
 bool frac_flag[300];
@@ -176,7 +176,7 @@ int main(int argc,char *argv[]){
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
     for (int i=0;i<obstacle_size;i++){
-        obstacles[i]= new obstacle(400+(14+2*i)*50+i*40,400+(14+2*i)*50+i*40,1.5,2,5);
+        obstacles[i]= new obstacle(400+(14+2*i)*50+i*40,400+(14+2*i)*50+i*40,1.5,2,2);
         scene1->addItem(obstacles[i]);
         if(obstacles[i]->type != 1)
             scene1->addItem(&obstacles[i]->a);

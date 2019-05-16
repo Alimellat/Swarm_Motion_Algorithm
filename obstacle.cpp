@@ -29,7 +29,7 @@ obstacle::obstacle(int x, int y,double w, int type, double r)
     yy=(y+(12/2));
     this->setRect(0,0,12,12);
     this->setPos(x,y);
-    double temp=r*step_size;
+    double temp=r*step_size*2;
     a.setRect(0,0,temp,temp);
     //a.sceneBoundingRect().moveCenter(QPointF(x+300,y+300));
    // a.rect().moveCenter(QPointF(x,y));
