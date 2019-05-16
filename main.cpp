@@ -9,21 +9,30 @@
 #include <QString>
 #include <QFile>
 #include "obstacle.h"
-bool showborder=0;
+#include <QPainter>
+#include <QDebug>
+
+
+
+
+
+bool showborder=1;
 bool speed_flag=1;
 //QFile File("s.txt");
 bool frac_flag[300];
+bool rapid_move=1;
+
 
 // the comment for github
 
 
 int repeat_counter=0;
-extern const int obstacle_size = 1;// number of obstacles
+extern const int obstacle_size = 4;// number of obstacles
 
 const int leader_size=20;
 float speed=3.5;
 extern const float step_size=35;
-float fracture_threshold=100;
+float fracture_threshold=100000;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
@@ -107,6 +116,9 @@ int main(int argc,char *argv[]){
     QApplication a(argc,argv);
 
 
+    QPainter p;
+    p.setBrush(Qt::red);
+
 
 
 
@@ -164,8 +176,14 @@ int main(int argc,char *argv[]){
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
     for (int i=0;i<obstacle_size;i++){
-        obstacles[i]= new obstacle(400+14*50+i*40,400+14*50+i*40,0.7,2,1);
+        obstacles[i]= new obstacle(400+(14+2*i)*50+i*40,400+(14+2*i)*50+i*40,1.5,2,5);
         scene1->addItem(obstacles[i]);
+        if(obstacles[i]->type != 1)
+            scene1->addItem(&obstacles[i]->a);
+        //qDebug()<<"x: "<<obstacles[i]->x()<<" y: "<<obstacles[i]->y();
+      // qDebug()<<"x: "<<obstacles[i]->sceneBoundingRect().center().x()<<" y: "<<obstacles[i]->sceneBoundingRect().center().y();
+      //  p.setBrush(Qt::red);
+      //  p.drawEllipse(QPointF(obstacles[i]->x(),obstacles[i]->y()),obstacles[i]->radious*step_size,obstacles[i]->radious*step_size);
     }
 
     //initialize each node's neighbours
@@ -233,6 +251,8 @@ int main(int argc,char *argv[]){
     //adding the text to the scene
 
      scene1->addItem(text);
+    // scene1->addEllipse()
+
     // scene1->setAttribute(Qt::WA_TransparentForMouseEvents);
      view->setAttribute(Qt::WA_TransparentForMouseEvents);
 

@@ -29,6 +29,8 @@ int period_iteration=0;
 double temp;
 double test_dx,test_dy;
 extern bool frac_flag[];
+extern bool rapid_move;
+int rapid_num=120;
 
 
 
@@ -41,7 +43,7 @@ bool po=1;
 bool file_open=0;
 
 double test_curr_x,test_curr_y;
-const int obstacle_size=1;//extern
+const int obstacle_size=4;//extern
 extern obstacle *obstacles[obstacle_size];
 
 
@@ -169,7 +171,8 @@ void node::set_repul(){
 
 
     }
-    qDebug()<<" repux "<<repul_x<<" repuy "<<repul_y;
+    //to get the repul for each node
+    //qDebug()<<" repux "<<repul_x<<" repuy "<<repul_y;
 }
 
 
@@ -2065,6 +2068,18 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
 
+
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
+
+
+
         }
     else if(event->key() == Qt::Key_D){
 
@@ -2082,6 +2097,14 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
     }
 
     else if(event->key() == Qt::Key_W){
@@ -2100,6 +2123,14 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
     }
     else if(event->key() == Qt::Key_X){
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
@@ -2114,6 +2145,15 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
 
     }
     else if(event->key() == Qt::Key_E){
@@ -2130,6 +2170,15 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
     }//
     else if(event->key() == Qt::Key_Q){
 
@@ -2146,6 +2195,15 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
 
 
 
@@ -2169,6 +2227,16 @@ void node::keyPressEvent(QKeyEvent *event)
             run_alg();
 
 
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
+
+
 
     }
     else if(event->key() == Qt::Key_C){
@@ -2185,12 +2253,29 @@ void node::keyPressEvent(QKeyEvent *event)
 
 }
             run_alg();
+
+
+            if(rapid_move){//if rapid movemeng is activated
+
+                for (int it=0;it<rapid_num;it++){
+
+                    run_alg();
+
+                }
+            }
     }
 
     else if(event->key() == Qt::Key_S){//make time go by to make the swarm rest and go to its initial form
 
             run_alg();
+
 }
+
+
+     else if(event->key() == Qt::Key_N){//make time go by to make the swarm rest and go to its initial form
+
+             rapid_move=(!rapid_move);
+ }
 
 
     else if(event->key()== Qt::Key_Space){// to rotate the leader for checking the effects of periodic motion

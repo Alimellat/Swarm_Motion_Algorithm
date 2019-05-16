@@ -17,6 +17,7 @@ public:
     double get_weight();
     int type;
      double radious;
+     QGraphicsEllipseItem a;
 
 
 };
