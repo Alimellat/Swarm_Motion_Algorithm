@@ -13,7 +13,8 @@
 #include <QDebug>
 
 
-
+double goal_x=1500;
+double goal_y=450;
 
 
 bool showborder=0;
@@ -27,10 +28,10 @@ bool rapid_move=1;
 
 
 int repeat_counter=0;
-extern const int obstacle_size = 4;// number of obstacles
+//extern const int obstacle_size = 2;// number of obstacles 4
 
 const int leader_size=20;
-float speed=3.5;
+float speed=1.5;
 extern const float step_size=35;
 float fracture_threshold=100000;
 float healing_threshold=1.5;
@@ -44,11 +45,12 @@ int current_leader_num=1;
 QGraphicsScene *scene1;
 
 QGraphicsView *view;
-extern const int leader_vector[leader_size][2]={{vector_size-2,5},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
+ int leader_vector[leader_size][2]={{vector_size-2,5},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                           {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                          {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
                                           {1,5},{1,6},{1,7},{1,8},
                                           {1,9},{1,2}};
+ int leader_group[4][2]={{vector_size-2,5}, {5,vector_size-2},{1,5},{5,1}};
 
 
 
@@ -123,6 +125,24 @@ int main(int argc,char *argv[]){
 
 
     //place code here
+
+
+
+
+
+    QGraphicsEllipseItem goal;//the goal we are trying to reach
+    goal.setRect(0,0,15,15);
+    goal.setPos(goal_x,goal_y);
+    goal.setBrush(QBrush(Qt::green,Qt::SolidPattern));
+
+
+
+
+
+
+
+
+
     for(int i=0;i<100;i++){
         frac_flag[i]=0;
     }
@@ -139,7 +159,8 @@ int main(int argc,char *argv[]){
     //label->setText("hello world");
 
     scene1=new QGraphicsScene();
-    scene1->setSceneRect(0,0,2000,2000);
+    scene1->setSceneRect(0,0,1920,1080);
+    scene1->addItem(&goal);
 
     leaderx=1;
     leadery=5;
@@ -148,7 +169,7 @@ int main(int argc,char *argv[]){
     for (int i=0;i<vector_size;i++){
     ellipse[j][i]= new node(j,i);
     ellipse[j][i]->setRect(0,0,12,12);
-    ellipse[j][i]->setPos(400+j*step_size,400+i*step_size);
+    ellipse[j][i]->setPos(50+j*step_size,400+i*step_size);//made changes here
     ellipse[j][i]->set_currx_curry();
 
 
@@ -176,7 +197,8 @@ int main(int argc,char *argv[]){
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
     for (int i=0;i<obstacle_size;i++){
-        obstacles[i]= new obstacle(400+(14+2*i)*50+i*40,400+(14+2*i)*50+i*40,1.5,2,2);
+        double rr=2;//radious
+        obstacles[i]= new obstacle(900,50+i*step_size*rr*2,1.5,2,rr);
         scene1->addItem(obstacles[i]);
         if(obstacles[i]->type != 1)
             scene1->addItem(&obstacles[i]->a);
@@ -214,11 +236,12 @@ int main(int argc,char *argv[]){
     ellipse[leader_vector[hh][0]][leader_vector[hh][1]]->set_leader(true);
     ellipse[leader_vector[hh][0]][leader_vector[hh][1]]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));
                                         }
-//setting speeds
+/*
+    //setting speeds
     if(speed_flag){
     for(int hh=10;hh<20;hh++){
     ellipse[leader_vector[hh][0]][leader_vector[hh][1]]->set_speed(0);}
-}
+}*/
 
 
 
@@ -241,7 +264,7 @@ int main(int argc,char *argv[]){
 
 
 
-    text->setPos(ellipse[0][0]->x()-100,ellipse[0][0]->y()-100);//(ellipse[0][0]->x()-100,ellipse[0][0]->y()-100);
+    text->setPos(15,15);//(ellipse[0][0]->x()-100,ellipse[0][0]->y()-100);
 
     //  text->setPlainText( QString("speed: ") +QString::number(speed)+QString("\nstep size: ") +QString::number(step_size)+QString("\nleader: ") +QString::number(ellipse[leaderx][leadery]->x())+QString("\n")+QString::number(ellipse[leaderx][leadery]->y()));
 
@@ -255,8 +278,10 @@ int main(int argc,char *argv[]){
 
     // scene1->setAttribute(Qt::WA_TransparentForMouseEvents);
      view->setAttribute(Qt::WA_TransparentForMouseEvents);
+     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    view->showMaximized();
+    view->showFullScreen();
     bind_fict_nodes();
 
     return a.exec();

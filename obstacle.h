@@ -1,7 +1,9 @@
 #include <QGraphicsEllipseItem>
 #include <QKeyEvent>
+#define obstacle_size 5
 #ifndef OBSTACLE_H
 #define OBSTACLE_H
+
 
 
 class obstacle : public QGraphicsEllipseItem

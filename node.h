@@ -15,6 +15,7 @@ class node : public QGraphicsEllipseItem
     int num_fict_node;
     double repul_x = 0;
     double repul_y = 0;
+    double value;
 
 
 
@@ -32,6 +33,7 @@ class node : public QGraphicsEllipseItem
 
 public:
     void bind_fict_nodes(bool is_edge,int side);
+    void erase_repul();
     bool  neigh_N1;
     bool  neigh_W1;
     bool  neigh_E1;
@@ -42,6 +44,8 @@ public:
     bool  neigh_SW1;
     void set_num_fict_node(int a);
     int get_num_fict_node();
+    void set_value(double d);
+    double get_value();
 
 
 

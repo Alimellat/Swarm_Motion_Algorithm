@@ -30,7 +30,28 @@ double temp;
 double test_dx,test_dy;
 extern bool frac_flag[];
 extern bool rapid_move;
-int rapid_num=120;
+//extern QGraphicsView *view;
+int rapid_num=50;
+bool leader_repul=1;//whether the leader is repulsed away from the obstacles
+double leader_repul_factor=1;
+extern double goal_x;
+extern double goal_y;
+
+
+
+
+int move_counter=0;// to count the number of times the leaders couldn't move
+
+
+int swarm_rest_factor=400;
+
+
+
+
+
+double choose_threshold=100;//threshold to choose the new leader
+
+double change_threshold=20;//threshold to change the leaeder
 
 
 
@@ -43,7 +64,7 @@ bool po=1;
 bool file_open=0;
 
 double test_curr_x,test_curr_y;
-const int obstacle_size=4;//extern
+//const int obstacle_size=2;//extern
 extern obstacle *obstacles[obstacle_size];
 
 
@@ -87,8 +108,10 @@ extern float speed;
 extern QGraphicsTextItem * text;
 extern const int vector_size=12;
 extern node * ellipse[vector_size][vector_size];
+extern int leader_group[4][2];
 extern int leaderx,leadery;
 extern  QGraphicsView * view;
+
 extern QGraphicsScene * scene1;
 double df;
 extern float step_size;
@@ -97,7 +120,7 @@ double d,XX,YY;
 double dX,dY;
 int x2,x3,y2,y3;
 double step;
-
+extern  int leader_vector[leader_size][2];
 double dx,dy;
 double alpha1=0;//-25//25
 double alpha2=0;//-25//25
@@ -147,8 +170,16 @@ void node::set_repul(){
         case 2:{
             double temp=d-obstacles[ii]->radious;
             double z = (obstacles[ii]->get_weight())/(temp*temp);
+            if(z > obstacles[ii]->radious){
+                qDebug()<<"big repul";
+                z=obstacles[ii]->radious;}
             repx=z*co*step_size;
+            if(repx > (obstacles[ii]->radious * step_size))
+                repx=(obstacles[ii]->radious * step_size);
+
             repy=z*si*step_size;
+            if(repy > (obstacles[ii]->radious * step_size))
+                repy=(obstacles[ii]->radious * step_size);
             repul_x+=repx;
             repul_y+=repy;
             break;
@@ -156,8 +187,15 @@ void node::set_repul(){
         case 3:{
 
             double z = (obstacles[ii]->get_weight())/((d*d)-(obstacles[ii]->radious*obstacles[ii]->radious));
+            if(z > obstacles[ii]->radious){
+                qDebug()<<"big repul";
+                z=obstacles[ii]->radious;}
             repx=z*co*step_size;
             repy=z*si*step_size;
+            if(repx > (obstacles[ii]->radious * step_size))
+                repx=(obstacles[ii]->radious * step_size);
+            if(repy > (obstacles[ii]->radious * step_size))
+                repy=(obstacles[ii]->radious * step_size);
             repul_x+=repx;
             repul_y+=repy;
             break;
@@ -174,6 +212,62 @@ void node::set_repul(){
     //to get the repul for each node
     //qDebug()<<" repux "<<repul_x<<" repuy "<<repul_y;
 }
+
+
+
+void node::erase_repul()
+{
+    repul_x=0;
+    repul_y=0;
+}
+
+
+void change_leader(){// setting the propper leader when needed
+    bool f[4]={0,0,0,0};
+    int best=0;;
+    f[curr_leader]=1;
+    double dist=100000;
+
+    bool chosen=0;//flag to indicate if a new leader has been chosen
+    while ((f[1] || f[0] || f[2] || f[3]) && (!chosen)){
+
+        for(int i=0;i<4;i++){
+            if(f[i] == 0){
+                double temp = calc_d(ellipse[leader_group[i][0]][leader_group[i][1]]->x(),ellipse[leader_group[i][0]][leader_group[i][1]]->y()
+                        ,goal_x,goal_y);
+                if(temp<dist){
+                    dist=temp;
+                    best=i;
+
+                }
+
+            }
+        }
+
+        chosen=1;
+
+   // ellipse[leader_group[best][0]][leader_group[best][1]]->erase_repul();
+    //ellipse[leader_group[best][0]][leader_group[best][1]]->set_repul();
+
+
+
+    }
+
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(0);
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::red,Qt::SolidPattern));
+    curr_leader=best;
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(1);
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));
+    leader_vector[0][0]=leader_group[curr_leader][0];
+    leader_vector[0][1]=leader_group[curr_leader][1];
+
+
+}
+
+
+
+
+
 
 
 //delay function
@@ -229,7 +323,7 @@ void node::adjust_frac_node()
 }
 
 
-extern const int leader_vector[leader_size][2];
+
 
 /*
 const int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
@@ -501,6 +595,8 @@ void node::bind_fict_nodes(bool is_edge, int side)
     }
 }
 
+
+
 void node::set_num_fict_node(int a)
 {
     num_fict_node=a;
@@ -509,6 +605,16 @@ void node::set_num_fict_node(int a)
 int node::get_num_fict_node()
 {
     return num_fict_node;
+}
+
+void node::set_value(double d)
+{
+    value=d;
+}
+
+double node::get_value()
+{
+    return value;
 }
 
 bool node::get_bordernode()
@@ -686,6 +792,7 @@ void adjust(int a,int b,int num){
 //          ellipse[a][b]->neigh_NW->get_disp_x(num)+
 //          ellipse[a][b]->neigh_SW->get_disp_x(num)
 //          )/8;
+
 //    posy=(ellipse[a][b]->neigh_E->get_disp_y(num)+
 //          ellipse[a][b]->neigh_W->get_disp_y(num)+
 //          ellipse[a][b]->neigh_N->get_disp_y(num)+
@@ -1148,7 +1255,7 @@ void adjust_border_type1(){//not compatible with the new changes
 
     step=ellipse[vector_size-1][vector_size-1]->getdf();
     ellipse[vector_size-1][vector_size-1]->setPos(ellipse[vector_size-2][vector_size-2]->x()+step_size,ellipse[vector_size-2][vector_size-2]->y()+step_size);
-    text->setPos(ellipse[0][0]->x()-100,ellipse[0][0]->y()-100);
+    text->setPos(15,15);
 
 }
 
@@ -2016,7 +2123,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
     set_df_for_all();
    // for(int h=0;h<current_leader_num;h++)
-    //qDebug()<<ellipse[1][1]->get_disp_x(h)<<"    "<<ellipse[1][1]->get_disp_y(h)<<"\n";
+    //qDebug()<<view->re<<"    "<<view->y();
 
 
 
@@ -2037,10 +2144,159 @@ void node::keyPressEvent(QKeyEvent *event)
         for (int i=0;i<vector_size;i++){
        // ellipse[j][i]= new node();
         //ellipse[j][i]->setRect(0,0,12,12);
-        ellipse[j][i]->setPos(400+j*step_size,400+i*step_size);
+        ellipse[j][i]->setPos(50+j*step_size,400+i*step_size);
         ellipse[j][i]->set_currx_curry();}}
 
     }
+     else if(event->key() == Qt::Key_R){// let the swarm rest
+
+         for(int j=0;j<swarm_rest_factor;j++){
+             run_alg();
+       }
+
+     }
+     else if(event->key() == Qt::Key_Right){// let the swarm rest
+
+         ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(0);
+         ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::red,Qt::SolidPattern));
+         curr_leader=(curr_leader+1)%4;
+         ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(1);
+         ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));
+         leader_vector[0][0]=leader_group[curr_leader][0];
+         leader_vector[0][1]=leader_group[curr_leader][1];
+
+
+
+     }
+
+
+     //automatic moving towards the goal
+
+
+
+     else if(event->key() == Qt::Key_G){
+         double temp=0;
+         double curx1,cury1;
+         double ddx,ddy;
+         for(int number_lead=0;number_lead<current_leader_num;number_lead++){
+             leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+         double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+         double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         if(leader_disp > calc_d(curx,cury,goal_x,goal_y)){
+            leader_disp = calc_d(curx,cury,goal_x,goal_y);
+         }
+            ddx=leader_disp*get_cos(curx,cury,goal_x,goal_y);
+            ddy=leader_disp*get_sin(curx,cury,goal_x,goal_y);
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()-
+                 ddx,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()-ddy);
+
+
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+        double x1,y1;
+        if(leader_repul){
+
+            x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+             y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+        }
+        else{
+            x1=0;y1=0;
+        }
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+                +x1,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+         curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+         cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         temp=calc_d(curx,cury,curx1,cury1);
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr_leader
+                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
+                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+ }
+
+             run_alg();
+
+
+
+
+             if(rapid_move){//if rapid movemeng is activated
+
+                 for (int it=0;it<rapid_num;it++){
+
+                     run_alg();
+
+                 }
+             }
+
+             if((temp<(0.2*leader_disp)) && (calc_d(curx1,cury1,goal_x,goal_y) > 0.5*step_size)){
+                 move_counter++;
+                 if(move_counter>9){
+
+                     move_counter=0;
+                     change_leader();
+
+                 }
+
+
+             }
+
+         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2052,12 +2308,47 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
     else if(event->key() == Qt::Key_A){
-
+        double temp=0;
         for(int number_lead=0;number_lead<current_leader_num;number_lead++){
             leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+        double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+        double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()-
                 leader_disp,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+
+
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+               +x1,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
+
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr_leader
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2078,18 +2369,63 @@ void node::keyPressEvent(QKeyEvent *event)
                 }
             }
 
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
 
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
 
         }
+
+
+
+
+
     else if(event->key() == Qt::Key_D){
 
 
-
+        double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
                 leader_disp,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
+               x1,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2105,17 +2441,64 @@ void node::keyPressEvent(QKeyEvent *event)
 
                 }
             }
+
+
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
+
+
     }
 
     else if(event->key() == Qt::Key_W){
 
 
-
+        double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
                 ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()-leader_disp);
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+x1
+               ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2131,13 +2514,65 @@ void node::keyPressEvent(QKeyEvent *event)
 
                 }
             }
+
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
     }
     else if(event->key() == Qt::Key_X){
+
+         double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
                 ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+leader_disp);
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+
+
+
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+x1
+               ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2155,15 +2590,67 @@ void node::keyPressEvent(QKeyEvent *event)
                 }
             }
 
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
+
     }
     else if(event->key() == Qt::Key_E){
+         double temp=0;
         for(int number_lead=0;number_lead<current_leader_num;number_lead++){
              leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+
+             double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+             double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
                 leader_disp,
                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()-leader_disp);
 
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
+               x1,
+               ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
@@ -2179,15 +2666,70 @@ void node::keyPressEvent(QKeyEvent *event)
 
                 }
             }
+
+
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
     }//
     else if(event->key() == Qt::Key_Q){
-
+        double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()-
                 leader_disp,
                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()-leader_disp);
+
+
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+               +x1,
+               ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2203,6 +2745,20 @@ void node::keyPressEvent(QKeyEvent *event)
                     run_alg();
 
                 }
+            }
+
+
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
             }
 
 
@@ -2211,13 +2767,55 @@ void node::keyPressEvent(QKeyEvent *event)
 
     }
     else if(event->key() == Qt::Key_Z){
-
+        double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()-
                 leader_disp,
                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+leader_disp);
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+
+
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+x1
+               ,
+               ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
+
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2238,14 +2836,68 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
 
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
+            }
+
+
+
     }
     else if(event->key() == Qt::Key_C){
+         double temp=0;
          for(int number_lead=0;number_lead<current_leader_num;number_lead++){
               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+
+
+
+              double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+              double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+
+
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
                 leader_disp,
                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+leader_disp);
+
+
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+       double x1,y1;
+       if(leader_repul){
+
+           x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+            y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+       }
+       else{
+           x1=0;y1=0;
+       }
+       ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+               (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
+               x1,
+               ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+       double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+       double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+        temp=calc_d(curx,cury,curx1,cury1);
 
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//
                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
@@ -2262,6 +2914,21 @@ void node::keyPressEvent(QKeyEvent *event)
                     run_alg();
 
                 }
+            }
+
+
+
+
+            if(temp<(0.2*leader_disp)){
+                move_counter++;
+                if(move_counter>9){
+
+                    move_counter=0;
+                    change_leader();
+
+                }
+
+
             }
     }
 
