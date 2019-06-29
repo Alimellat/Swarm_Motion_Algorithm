@@ -31,11 +31,14 @@ double test_dx,test_dy;
 extern bool frac_flag[];
 extern bool rapid_move;
 //extern QGraphicsView *view;
-int rapid_num=50;
+int stiffness=300;
 bool leader_repul=1;//whether the leader is repulsed away from the obstacles
 double leader_repul_factor=1;
 extern double goal_x;
 extern double goal_y;
+
+bool f[4]={0,0,0,0};
+int cycle_num=0;
 
 
 
@@ -223,8 +226,17 @@ void node::erase_repul()
 
 
 void change_leader(){// setting the propper leader when needed
-    bool f[4]={0,0,0,0};
-    int best=0;;
+
+    int best=0;
+    cycle_num++;
+    if(cycle_num == 4){
+        cycle_num=0;
+        f[0]=0;
+        f[1]=0;
+        f[2]=0;
+        f[3]=0;
+    }
+
     f[curr_leader]=1;
     double dist=100000;
 
@@ -2237,7 +2249,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
              if(rapid_move){//if rapid movemeng is activated
 
-                 for (int it=0;it<rapid_num;it++){
+                 for (int it=0;it<stiffness;it++){
 
                      run_alg();
 
@@ -2263,16 +2275,305 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
 
+     else if (event->key() == Qt::Key_T){
+
+
+         double temp=0;
+         for(int number_lead=0;number_lead<2;number_lead++){
+             leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+         double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+         double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()-
+                 leader_disp,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
 
 
 
 
 
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+        double x1,y1;
+        if(leader_repul){
+
+            x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+             y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+        }
+        else{
+            x1=0;y1=0;
+        }
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+                +x1,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+        double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+        double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         temp=calc_d(curx,cury,curx1,cury1);
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr_leader
+                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
+                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+ }
+
+             run_alg();
+
+
+
+
+             if(rapid_move){//if rapid movemeng is activated
+
+                 for (int it=0;it<stiffness;it++){
+
+                     run_alg();
+
+                 }
+             }
+
+             if(temp<(0.2*leader_disp)){
+                 move_counter++;
+                 if(move_counter>9){
+
+                     move_counter=0;
+                     change_leader();
+
+                 }
+
+
+             }
+     }
+
+
+
+     else if (event->key() == Qt::Key_Y){
+
+
+         double temp=0;
+         for(int number_lead=0;number_lead<2;number_lead++){
+             leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+         double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+         double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+
+                 leader_disp,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
 
 
 
 
 
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+        double x1,y1;
+        if(leader_repul){
+
+            x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+             y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+        }
+        else{
+            x1=0;y1=0;
+        }
+
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+                +x1,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+
+        double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+        double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         temp=calc_d(curx,cury,curx1,cury1);
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr_leader
+                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
+                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+ }
+
+             run_alg();
+
+
+
+
+             if(rapid_move){//if rapid movemeng is activated
+
+                 for (int it=0;it<stiffness;it++){
+
+                     run_alg();
+
+                 }
+             }
+
+             if(temp<(0.2*leader_disp)){
+                 move_counter++;
+                 if(move_counter>9){
+
+                     move_counter=0;
+                     change_leader();
+
+                 }
+
+
+             }
+     }
+
+
+
+
+
+     else if (event->key() == Qt::Key_U){
+         double temp=0;
+          for(int number_lead=0;number_lead<current_leader_num;number_lead+=2){
+               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+               double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+               double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+                 ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()-leader_disp);
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+        double x1,y1;
+        if(leader_repul){
+
+            x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+             y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+        }
+        else{
+            x1=0;y1=0;
+        }
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+x1
+                ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+        double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+        double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         temp=calc_d(curx,cury,curx1,cury1);
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr
+                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
+                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+
+ }
+             run_alg();
+             if(rapid_move){//if rapid movemeng is activated
+
+                 for (int it=0;it<stiffness;it++){
+
+                     run_alg();
+
+                 }
+             }
+
+
+             if(temp<(0.2*leader_disp)){
+                 move_counter++;
+                 if(move_counter>9){
+
+                     move_counter=0;
+                     change_leader();
+
+                 }
+
+
+             }
+     }
+
+
+
+
+
+     else if (event->key() == Qt::Key_I){
+         double temp=0;
+          for(int number_lead=0;number_lead<current_leader_num;number_lead+=2){
+               leader_disp=speed*step_size*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->get_speed();
+
+
+               double curx=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+               double cury=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                 (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()
+                 ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+leader_disp);
+
+
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+        double x1,y1;
+        if(leader_repul){
+
+            x1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x;
+             y1=leader_repul_factor*ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y;
+
+        }
+        else{
+            x1=0;y1=0;
+        }
+        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->setPos
+                (ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x()+x1
+                ,ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y()+y1);
+
+        double curx1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x();
+        double cury1=ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y();
+         temp=calc_d(curx,cury,curx1,cury1);
+
+         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_displacement(number_lead,//curr
+                                                                           ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->x(),
+                 ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->y());
+
+ }
+             run_alg();
+             if(rapid_move){//if rapid movemeng is activated
+
+                 for (int it=0;it<stiffness;it++){
+
+                     run_alg();
+
+                 }
+             }
+
+
+             if(temp<(0.2*leader_disp)){
+                 move_counter++;
+                 if(move_counter>9){
+
+                     move_counter=0;
+                     change_leader();
+
+                 }
+
+
+             }
+     }
 
 
 
@@ -2362,7 +2663,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2435,7 +2736,7 @@ void node::keyPressEvent(QKeyEvent *event)
             run_alg();
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2508,7 +2809,7 @@ void node::keyPressEvent(QKeyEvent *event)
             run_alg();
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2583,7 +2884,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2660,7 +2961,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2740,7 +3041,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2827,7 +3128,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 
@@ -2909,7 +3210,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
             if(rapid_move){//if rapid movemeng is activated
 
-                for (int it=0;it<rapid_num;it++){
+                for (int it=0;it<stiffness;it++){
 
                     run_alg();
 

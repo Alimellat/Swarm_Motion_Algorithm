@@ -14,7 +14,7 @@
 
 
 double goal_x=1500;
-double goal_y=450;
+double goal_y=150;
 
 
 bool showborder=0;
@@ -33,7 +33,7 @@ int repeat_counter=0;
 const int leader_size=20;
 float speed=1.5;
 extern const float step_size=35;
-float fracture_threshold=100000;
+float fracture_threshold=20;
 float healing_threshold=1.5;
 const int vector_size =12;
 node *ellipse[vector_size][vector_size];
@@ -41,15 +41,27 @@ obstacle *obstacles[obstacle_size];
 node * ellipse_frac[300];
 QGraphicsTextItem * text;
 int leaderx,leadery;
-int current_leader_num=1;
+int current_leader_num=1
+        ;
 QGraphicsScene *scene1;
 
 QGraphicsView *view;
+/*
+ int leader_vector[leader_size][2]={{vector_size-2,1},{vector_size-2,10},{1,1},{1,10},
+                                          {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
+                                         {vector_size-2,9},{vector_size-2,10},{1,1},{1,10},{1,3},{1,4},
+                                          {1,5},{1,6},{1,7},{1,8},
+                                          {1,9},{1,2}};
+
+
+*/
+
  int leader_vector[leader_size][2]={{vector_size-2,5},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                           {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                          {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
                                           {1,5},{1,6},{1,7},{1,8},
                                           {1,9},{1,2}};
+
  int leader_group[4][2]={{vector_size-2,5}, {5,vector_size-2},{1,5},{5,1}};
 
 
@@ -196,9 +208,9 @@ int main(int argc,char *argv[]){
     }
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
-    for (int i=0;i<obstacle_size;i++){
+    for (int i=0;i<obstacle_size;i++){//changed the obstacle orientation
         double rr=2;//radious
-        obstacles[i]= new obstacle(900,50+i*step_size*rr*2,1.5,2,rr);
+        obstacles[i]= new obstacle(1000,300+i*step_size*rr*2+i*230,1.5,2,rr);
         scene1->addItem(obstacles[i]);
         if(obstacles[i]->type != 1)
             scene1->addItem(&obstacles[i]->a);
@@ -207,6 +219,10 @@ int main(int argc,char *argv[]){
       //  p.setBrush(Qt::red);
       //  p.drawEllipse(QPointF(obstacles[i]->x(),obstacles[i]->y()),obstacles[i]->radious*step_size,obstacles[i]->radious*step_size);
     }
+
+
+
+
 
     //initialize each node's neighbours
     for(int j=0;j<vector_size;j++){
