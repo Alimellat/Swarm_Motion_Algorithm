@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QDebug>
 #include "obstacle.h"
+#include <QtMath>
 
 #define West 0
 #define northwest 1
@@ -31,7 +32,9 @@ double test_dx,test_dy;
 extern bool frac_flag[];
 extern bool rapid_move;
 //extern QGraphicsView *view;
-int stiffness=300;
+int stiffness=100;
+int init_stiffness=100;
+int stiffnessratio=100;
 bool leader_repul=1;//whether the leader is repulsed away from the obstacles
 double leader_repul_factor=1;
 extern double goal_x;
@@ -109,7 +112,7 @@ double node_displace[leader_size][2];
 
 extern float speed;
 extern QGraphicsTextItem * text;
-extern const int vector_size=12;
+extern const int vector_size=13;
 extern node * ellipse[vector_size][vector_size];
 extern int leader_group[4][2];
 extern int leaderx,leadery;
@@ -150,6 +153,34 @@ double get_sin(double x1, double y1, double x2,double y2){
 
 
 
+double node::getThreshold_angle() const
+{
+    return threshold_angle;
+}
+
+void node::setThreshold_angle(double value)
+{
+    threshold_angle = value;
+}
+
+double node::getLeader_weight() const
+{
+    return leader_weight;
+}
+
+void node::setLeader_weight(double value)
+{
+    leader_weight = value;
+}
+double node::getRepulsiveness() const
+{
+    return repulsiveness;
+}
+
+void node::setRepulsiveness(double value)
+{
+    repulsiveness = value;
+}
 
 void node::set_repul(){
     for(int ii=0;ii<obstacle_size;ii++){
@@ -174,7 +205,7 @@ void node::set_repul(){
             double temp=d-obstacles[ii]->radious;
             double z = (obstacles[ii]->get_weight())/(temp*temp);
             if(z > obstacles[ii]->radious){
-                qDebug()<<"big repul";
+               // qDebug()<<"big repul";
                 z=obstacles[ii]->radious;}
             repx=z*co*step_size;
             if(repx > (obstacles[ii]->radious * step_size))
@@ -216,6 +247,11 @@ void node::set_repul(){
     //qDebug()<<" repux "<<repul_x<<" repuy "<<repul_y;
 }
 
+double node::get_repul()
+{
+    return (sqrt(repul_x * repul_x + repul_y * repul_y));
+}
+
 
 
 void node::erase_repul()
@@ -225,10 +261,72 @@ void node::erase_repul()
 }
 
 
+double get_angle(double x1,double y1,double x2,double y2,double x3,double y3){//to get the angle between two lines,
+                                     //the lines collide ad x1,y1 and each of ther two points belongs to a separate line
+                                       //returns the angle in radians
+    double m1= (y2-y1)/(x2-x1);
+    double m2=(y3-y1)/(x3-x1);
+    qDebug()<<m1<<"  "<<m2;
+    double tanx=qFabs((m1-m2)/(1+m1*m2));
+    qDebug()<<tanx;
+    double temp=(((y2-y1)*(y3-y1))+((x2-x1)*(x3-x1)));//the inner product of the two vectors
+    double d1=calc_d(x1,y1,x2,y2);
+    double d2=calc_d(x1,y1,x3,y3);
+    temp/=(d1*d2);
+
+    return qAcos(temp);
+
+
+
+}
+
 void change_leader(){// setting the propper leader when needed
 
+    double best_f=-10000000;
+    int indice, tempx, tempy;
+    double distance,directionality,f,repulsiveness;
     int best=0;
     cycle_num++;
+    double xx,yy;
+    double angle;
+    tempx=0; tempy=0;
+    //findong the centroid of the candid leaders
+
+    for(int i=0;i < candid_leader_num; i++){
+        tempx+=(ellipse[leader_group[i][0]][leader_group[i][1]]->x());
+        tempy+=(ellipse[leader_group[i][0]][leader_group[i][1]]->y());
+    }
+    tempx/=candid_leader_num;
+    tempy/=candid_leader_num;
+
+    for(int i=0;i < candid_leader_num; i++){//finding the best leader
+       // if(i != curr_leader){
+            xx=ellipse[leader_group[i][0]][leader_group[i][1]]->x();
+            yy=ellipse[leader_group[i][0]][leader_group[i][1]]->y();
+            angle= M_PI - get_angle(xx,yy,tempx,tempy,goal_x,goal_y);
+            if(angle > ellipse[leader_group[i][0]][leader_group[i][1]]->getThreshold_angle())//limit the angle to the threshold
+                angle = ellipse[leader_group[i][0]][leader_group[i][1]]->getThreshold_angle();
+
+
+
+            //distance=calc_d(xx,yy,goal_x,goal_y)/step_size;//distance is set for 1 for all
+            distance=1;
+            directionality=distance*ellipse[leader_group[i][0]][leader_group[i][1]]->getLeader_weight()*qCos(angle);//assuming the vector for the directionality base is of size 1
+            repulsiveness=ellipse[leader_group[i][0]][leader_group[i][1]]->getRepulsiveness() * ellipse[leader_group[i][0]][leader_group[i][1]]->getLeader_weight();
+            f=directionality-repulsiveness;
+            //if(angle > ellipse[leader_group[i][0]][leader_group[i][1]]->getThreshold_angle())//limiting the angle to the one set for the leader
+               // angle=ellipse[leader_group[i][0]][leader_group[i][1]]->getThreshold_angle();
+            qDebug()<<"centroid:"<<tempx<<" "<<tempy<<" angle: "<<qRadiansToDegrees(angle)<<"  i: "<<i<<"  "<<xx<<"  "<<yy<<
+                      " distance "<<distance<<" directionality "<<directionality<<" f "<<f<<"repulsiveness"<< repulsiveness ;
+            if(f>best_f){
+                best_f=f;
+                best=i;
+            }
+
+
+        //}
+    }
+    /*
     if(cycle_num == 4){
         cycle_num=0;
         f[0]=0;
@@ -273,7 +371,14 @@ void change_leader(){// setting the propper leader when needed
     leader_vector[0][0]=leader_group[curr_leader][0];
     leader_vector[0][1]=leader_group[curr_leader][1];
 
-
+*/
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(0);
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::red,Qt::SolidPattern));
+    curr_leader=best;
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->set_leader(1);
+    ellipse[leader_group[curr_leader][0]][leader_group[curr_leader][1]]->setBrush(QBrush(Qt::blue,Qt::SolidPattern));
+    leader_vector[0][0]=leader_group[curr_leader][0];
+    leader_vector[0][1]=leader_group[curr_leader][1];
 }
 
 
@@ -592,6 +697,18 @@ void set_df_for_all(){
 
 
 // possibly redundant function
+
+double node::getPrev_repul()
+{
+    return prev_repul;
+}
+
+void node::setPrev_repul(double value)
+{
+    prev_repul = value;
+}
+
+
 
 void node::bind_fict_nodes(bool is_edge, int side)
 {
@@ -1345,6 +1462,10 @@ void  move_all_nodes(){
 
 node::node()//constructor
 {
+    leader_weight=1;
+    repulsiveness=0;
+    threshold_angle=M_PI_4;
+    prev_repul=0;
     for(int i=0;i<8;i++){
         fracindice[i]=-1;//initial frac indices
 
@@ -1377,6 +1498,10 @@ node::node()//constructor
 
 node::node(int a, int b)
 {
+    leader_weight=1;
+    threshold_angle=M_PI_4;
+    repulsiveness=0;
+    prev_repul=0;
     for(int i=0;i<8;i++){
         fracindice[i]=-1;//initial frac indices
 
@@ -2151,6 +2276,7 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
     else if(event->key() == Qt::Key_P){// reset the swarm
+         stiffness=init_stiffness;
 
         for(int j=0;j<vector_size;j++){
         for (int i=0;i<vector_size;i++){
@@ -2165,7 +2291,8 @@ void node::keyPressEvent(QKeyEvent *event)
          for(int j=0;j<swarm_rest_factor;j++){
              run_alg();
        }
-
+         qDebug()<<"hello"<<qRadiansToDegrees(get_angle(1275,242,1094,244,1500,150));
+            change_leader();
      }
      else if(event->key() == Qt::Key_Right){// let the swarm rest
 
@@ -2213,9 +2340,32 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
 
-         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
-         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
-        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+
+        //variable stiffness
+        for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           // if(i != curr_leader){
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+          ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+                double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+                double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+        }
+
+
+        if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+            stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+        else
+            stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
+
         double x1,y1;
         if(leader_repul){
 
@@ -2299,6 +2449,31 @@ void node::keyPressEvent(QKeyEvent *event)
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+
+        //variable stiffness
+        for(int i=0;i < candid_leader_num; i++){//finding the best leader
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+          ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+           // if(i != curr_leader){
+
+                double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+                double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+        }
+
+
+        if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+            stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+        else
+            stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
         double x1,y1;
         if(leader_repul){
 
@@ -2350,6 +2525,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
              }
+             else
+                 move_counter=0;
      }
 
 
@@ -2378,6 +2555,29 @@ void node::keyPressEvent(QKeyEvent *event)
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+        //variable stiffness
+        for(int i=0;i < candid_leader_num; i++){//finding the best leader
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+          ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+           // if(i != curr_leader){
+
+                double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+                double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+        }
+
+
+        if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+            stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+        else
+            stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
         double x1,y1;
         if(leader_repul){
 
@@ -2429,6 +2629,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
              }
+             else
+                 move_counter=0;
      }
 
 
@@ -2456,6 +2658,28 @@ void node::keyPressEvent(QKeyEvent *event)
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
          ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+        //variable stiffness
+        for(int i=0;i < candid_leader_num; i++){//finding the best leader
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+            ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+          ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+           // if(i != curr_leader){
+
+                double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+                double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+               ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+        }
+
+
+        if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+            stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+        else
+            stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
         double x1,y1;
         if(leader_repul){
 
@@ -2501,6 +2725,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
              }
+             else
+                 move_counter=0;
      }
 
 
@@ -2573,34 +2799,9 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
              }
+             else
+                 move_counter=0;
      }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //ARROW keys CAN BE USED TO SELECT LEADERS, ALTOUGH THIS HAS TO BE IMPLEMENTED TO WORK WITH THE NEW CODE
      //THE PREVIOUS METHOD WOULD NOT WORK FOR THE NEW CODE AND FUNCTIONALITIES
@@ -2630,6 +2831,30 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -2681,6 +2906,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
 
         }
 
@@ -2709,6 +2936,30 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+              //qDebug()<<i<< "temp1 "<<temp1<<" temp2 "<<temp2<<"  "<<ellipse[leader_group[i][0]][leader_group[i][1]]->getRepulsiveness();
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -2756,6 +3007,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
 
 
     }
@@ -2783,6 +3036,30 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -2828,6 +3105,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
     }
     else if(event->key() == Qt::Key_X){
 
@@ -2852,6 +3131,33 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -2903,6 +3209,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
 
     }
     else if(event->key() == Qt::Key_E){
@@ -2931,6 +3239,31 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -2981,6 +3314,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
     }//
     else if(event->key() == Qt::Key_Q){
         double temp=0;
@@ -3012,6 +3347,31 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -3061,6 +3421,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
 
 
 
@@ -3095,6 +3457,32 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
+
+
+
+
        double x1,y1;
        if(leader_repul){
 
@@ -3149,6 +3537,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
 
 
 
@@ -3180,6 +3570,27 @@ void node::keyPressEvent(QKeyEvent *event)
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_x=0;
         ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->repul_y=0;
        ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->set_repul();
+
+
+       //variable stiffness
+       for(int i=0;i < candid_leader_num; i++){//finding the best leader
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_x=0;
+           ellipse[leader_group[i][0]][leader_group[i][1]]->repul_y=0;
+         ellipse[leader_group[i][0]][leader_group[i][1]]->set_repul();
+          // if(i != curr_leader){
+
+               double temp1= ellipse[leader_group[i][0]][leader_group[i][1]]->getPrev_repul();
+               double temp2 = ellipse[leader_group[i][0]][leader_group[i][1]]->get_repul();
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setPrev_repul(temp2);
+              ellipse[leader_group[i][0]][leader_group[i][1]]->setRepulsiveness(temp2 - temp1);//setting the repulsiveness for each candidate node
+       }
+
+
+       if(ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness()>0)
+           stiffness/=(1+((ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+       else
+           stiffness*=(1+((-1 * ellipse[leader_vector[number_lead][0]][leader_vector[number_lead][1]]->getRepulsiveness())/100));
+
        double x1,y1;
        if(leader_repul){
 
@@ -3231,6 +3642,8 @@ void node::keyPressEvent(QKeyEvent *event)
 
 
             }
+            else
+                move_counter=0;
     }
 
     else if(event->key() == Qt::Key_S){//make time go by to make the swarm rest and go to its initial form
@@ -3471,6 +3884,7 @@ void node::keyPressEvent(QKeyEvent *event)
     view->update();
     //scene1->repaint();
     scene1->update();
+    qDebug()<<stiffness;
 }
 
 

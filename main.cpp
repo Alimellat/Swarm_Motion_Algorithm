@@ -23,7 +23,6 @@ bool speed_flag=1;
 bool frac_flag[300];
 bool rapid_move=1;
 
-
 // the comment for github
 
 
@@ -33,9 +32,9 @@ int repeat_counter=0;
 const int leader_size=20;
 float speed=1.5;
 extern const float step_size=35;
-float fracture_threshold=20;
+float fracture_threshold=100;
 float healing_threshold=1.5;
-const int vector_size =12;
+const int vector_size =13;
 node *ellipse[vector_size][vector_size];
 obstacle *obstacles[obstacle_size];
 node * ellipse_frac[300];
@@ -56,13 +55,13 @@ QGraphicsView *view;
 
 */
 
- int leader_vector[leader_size][2]={{vector_size-2,5},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
+ int leader_vector[leader_size][2]={{vector_size-2,6},{vector_size-2,10},{vector_size-2,3},{vector_size-2,4},
                                           {vector_size-2,5},{vector_size-2,6},{vector_size-2,7},{vector_size-2,8},
                                          {vector_size-2,9},{vector_size-2,2},{1,1},{1,10},{1,3},{1,4},
                                           {1,5},{1,6},{1,7},{1,8},
                                           {1,9},{1,2}};
 
- int leader_group[4][2]={{vector_size-2,5}, {5,vector_size-2},{1,5},{5,1}};
+ int leader_group[4][2]={{vector_size-2,6}, {6,vector_size-2},{1,6},{6,1}};
 
 
 
@@ -208,12 +207,17 @@ int main(int argc,char *argv[]){
     }
     else
         ellipse[j][i]->setBrush(QBrush(Qt::red,Qt::SolidPattern));}}
+    int temp=0;
     for (int i=0;i<obstacle_size;i++){//changed the obstacle orientation
         double rr=2;//radious
-        obstacles[i]= new obstacle(1000,300+i*step_size*rr*2+i*230,1.5,2,rr);
+        obstacles[i]= new obstacle(1000+temp*150,300+(i%2)*step_size*rr*2+(i%2)*230,1.5,2,rr);
         scene1->addItem(obstacles[i]);
         if(obstacles[i]->type != 1)
             scene1->addItem(&obstacles[i]->a);
+        if(i%2 == 0)
+            temp++;
+
+
         //qDebug()<<"x: "<<obstacles[i]->x()<<" y: "<<obstacles[i]->y();
       // qDebug()<<"x: "<<obstacles[i]->sceneBoundingRect().center().x()<<" y: "<<obstacles[i]->sceneBoundingRect().center().y();
       //  p.setBrush(Qt::red);
@@ -268,7 +272,7 @@ int main(int argc,char *argv[]){
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->setFocus();
     ellipse[leader_vector[0][0]][leader_vector[0][1]]->grabKeyboard();
    // ellipse[leader_vector[0][0]][leader_vector[0][1]]->grabMouse();
-    scene1->setBackgroundBrush(QBrush(Qt::gray));
+    scene1->setBackgroundBrush(QBrush(Qt::white));
     view= new QGraphicsView(scene1);
 
      //scene->setSceneRect(0,0,1920,1080);

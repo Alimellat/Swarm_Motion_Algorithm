@@ -4,6 +4,7 @@
 #define NODE_H
 
 const int max_binded_fict_nodes=4;
+const int candid_leader_num = 4;
 
 class node : public QGraphicsEllipseItem
 {
@@ -16,17 +17,16 @@ class node : public QGraphicsEllipseItem
     double repul_x = 0;
     double repul_y = 0;
     double value;
-
-
-
     double current_x,current_y;
-
     double displacements[20][2];//the displacements is used to save the displacements for each leader moving
     double temp_displacements[20][2];
     double if_leader_speed=0;
     double leader_speed;
-
     int frac_node_side;//1-w  2-nw ... 8-sw
+    double prev_repul;
+    double threshold_angle;
+    double leader_weight;
+    double repulsiveness;
 
 
 
@@ -46,17 +46,12 @@ public:
     int get_num_fict_node();
     void set_value(double d);
     double get_value();
-
-
-
-
-
-
     int fracindice[8];
     bool get_bordernode();
     void heal_check();
     void set_bordernode(bool a);
     void set_repul();
+    double get_repul();
     int vec_x,vec_y;
     node * neigh_N;
     node * neigh_W;
@@ -103,6 +98,14 @@ public:
     double get_disp_y(int i);
     void set_temp_disp(int i ,double dx,double dy);
     void set_disps(int l);
+    double getPrev_repul();
+    void setPrev_repul(double value);
+    double getThreshold_angle() const;
+    void setThreshold_angle(double value);
+    double getLeader_weight() const;
+    void setLeader_weight(double value);
+    double getRepulsiveness() const;
+    void setRepulsiveness(double value);
 };
 
 #endif // NODE_H
